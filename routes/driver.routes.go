@@ -14,11 +14,12 @@ func NewDriverRouteController(driverController controllers.DriverController) Dri
 }
 
 func (rc *DriverRouteController) DriverRoute(rg *gin.RouterGroup) {
-	router := rg.Group("driver")
+	router := rg.Group("drivers")
 
 	router.POST("/", rc.driverController.CreateDriver)
 	router.GET("/", rc.driverController.FindDrivers)
 	router.POST("/:driverId", rc.driverController.UpdateDriver)
 	router.GET("/:driverId", rc.driverController.FindDriverById)
+	router.PUT("/:driverId", rc.driverController.UpdateDriver)
 	router.DELETE("/:driverId", rc.driverController.DeleteDriver)
 }

@@ -14,10 +14,12 @@ type Contractor struct {
 	Note      string    `json:"note,omitempty"`
 	CreatedAt time.Time `gorm:"not null" json:"created_at,omitempty"`
 	UpdatedAt time.Time `gorm:"not null" json:"updated_at,omitempty"`
+	Drivers   []Driver  `gorm:"foreignKey:ContractorID" json:"drivers,omitempty"` // One-to-many relation with Driver
+	Trucks    []Truck   `gorm:"foreignKey:ContractorID" json:"trucks,omitempty"`  // One-to-many relation with Truck
 }
 
 type CreateContractorRequest struct {
-	Name      string    `json:"name"  binding:"required"`
+	Name      string    `json:"name" binding:"required"`
 	Phone     string    `json:"phone" binding:"required"`
 	Address   string    `json:"address" binding:"required"`
 	Note      string    `json:"note,omitempty"`

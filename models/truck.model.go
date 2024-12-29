@@ -15,10 +15,15 @@ type Truck struct {
 	Height       float64   `gorm:"not null" json:"height,omitempty"`
 	Volume       float64   `gorm:"not null" json:"volume,omitempty"`
 	VehicleType  string    `gorm:"not null" json:"vehicle_type,omitempty"`
-	Contractor   uuid.UUID `gorm:"type:uuid" json:"contractor,omitempty"`
+	Brand        string    `gorm:"not null" json:"brand,omitempty"`          // New field for Brand
+	ContractorID uuid.UUID `gorm:"type:uuid" json:"contractor_id,omitempty"` // Foreign key to Contractor
 	Note         string    `json:"note,omitempty"`
+	Status       string    `gorm:"not null;default:'active'" json:"status,omitempty"` // New field for Status
 	CreatedAt    time.Time `gorm:"not null" json:"created_at,omitempty"`
 	UpdatedAt    time.Time `gorm:"not null" json:"updated_at,omitempty"`
+
+	// Association
+	Contractor Contractor `gorm:"foreignKey:ContractorID" json:"contractor,omitempty"` // Add Contractor relationship
 }
 
 type CreateTruckRequest struct {
@@ -29,8 +34,10 @@ type CreateTruckRequest struct {
 	Height       float64 `json:"height" binding:"required"`
 	Volume       float64 `json:"volume" binding:"required"`
 	VehicleType  string  `json:"vehicle_type" binding:"required"`
-	Contractor   string  `json:"contractor,omitempty"`
+	Brand        string  `json:"brand" binding:"required"` // Added field for brand
+	Contractor   string  `json:"contractor,omitempty"`     // Optional contractor info (ID)
 	Note         string  `json:"note,omitempty"`
+	Status       string  `json:"status,omitempty"` // Optional status field
 }
 
 type UpdateTruckRequest struct {
@@ -41,6 +48,8 @@ type UpdateTruckRequest struct {
 	Height       float64 `json:"height,omitempty"`
 	Volume       float64 `json:"volume,omitempty"`
 	VehicleType  string  `json:"vehicle_type,omitempty"`
-	Contractor   string  `json:"contractor,omitempty"`
+	Brand        string  `json:"brand,omitempty"`      // Updated brand field
+	Contractor   string  `json:"contractor,omitempty"` // Optional contractor info (ID)
 	Note         string  `json:"note,omitempty"`
+	Status       string  `json:"status,omitempty"` // Optional status field
 }

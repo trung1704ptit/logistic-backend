@@ -23,7 +23,7 @@ func (cc *ContractorController) CreateContractor(ctx *gin.Context) {
 	var payload *models.CreateContractorRequest
 
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		ctx.JSON(http.StatusBadRequest, err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
@@ -43,7 +43,7 @@ func (cc *ContractorController) CreateContractor(ctx *gin.Context) {
 			ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": "Contractor with that name already exists"})
 			return
 		}
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": result.Error.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": result.Error.Error()})
 		return
 	}
 
@@ -55,15 +55,17 @@ func (cc *ContractorController) UpdateContractor(ctx *gin.Context) {
 
 	var payload *models.UpdateContractor
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
+
 	var updatedContractor models.Contractor
-	result := cc.DB.First(&updatedContractor, "id = ?", contractorId)
+	result := cc.DB.Preload("Drivers").Preload("Trucks").First(&updatedContractor, "id = ?", contractorId)
 	if result.Error != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "No contractor with that ID exists"})
+		ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "Contractor with that ID does not exist"})
 		return
 	}
+
 	now := time.Now()
 	contractorToUpdate := models.Contractor{
 		Name:      payload.Name,
@@ -83,12 +85,14 @@ func (cc *ContractorController) FindContractorById(ctx *gin.Context) {
 	contractorId := ctx.Param("contractorId")
 
 	var contractor models.Contractor
-	result := cc.DB.First(&contractor, "id = ?", contractorId)
+	// Preload drivers and trucks
+	result := cc.DB.Preload("Drivers").Preload("Trucks").First(&contractor, "id = ?", contractorId)
 	if result.Error != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "No contractor with that ID exists"})
+		ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "Contractor with that ID does not exist"})
 		return
 	}
 
+	// Respond with contractor data including drivers and trucks
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": contractor})
 }
 
@@ -101,9 +105,9 @@ func (cc *ContractorController) FindContractors(ctx *gin.Context) {
 	offset := (intPage - 1) * intLimit
 
 	var contractors []models.Contractor
-	results := cc.DB.Limit(intLimit).Offset(offset).Find(&contractors)
+	results := cc.DB.Preload("Drivers").Preload("Trucks").Limit(intLimit).Offset(offset).Find(&contractors)
 	if results.Error != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": results.Error})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": results.Error.Error()})
 		return
 	}
 
@@ -114,9 +118,8 @@ func (cc *ContractorController) DeleteContractor(ctx *gin.Context) {
 	contractorId := ctx.Param("contractorId")
 
 	result := cc.DB.Delete(&models.Contractor{}, "id = ?", contractorId)
-
 	if result.Error != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "No contractor with that ID exists"})
+		ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "Contractor with that ID does not exist"})
 		return
 	}
 
