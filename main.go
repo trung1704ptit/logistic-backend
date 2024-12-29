@@ -21,6 +21,15 @@ var (
 
 	PostController      controllers.PostController
 	PostRouteController routes.PostRouteController
+
+	ContractorController      controllers.ContractorController
+	ContractorRouteController routes.ContractorRouteController
+
+	DriverController      controllers.DriverController
+	DriverRouteController routes.DriverRouteController
+
+	TruckController      controllers.TruckController
+	TruckRouteController routes.TruckRouteController
 )
 
 func init() {
@@ -40,29 +49,55 @@ func init() {
 	PostController = controllers.NewPostController(initializers.DB)
 	PostRouteController = routes.NewRoutePostController(PostController)
 
+	ContractorController = controllers.NewContractorController(initializers.DB)
+	ContractorRouteController = routes.NewContractorRouteController(ContractorController)
+
+	DriverController = controllers.NewDriverController(initializers.DB)
+	DriverRouteController = routes.NewDriverRouteController(DriverController)
+
+	TruckController = controllers.NewTruckController(initializers.DB)
+	TruckRouteController = routes.NewTruckRouteController(TruckController)
+
+	// Initialize Gin server
 	server = gin.Default()
 }
 
 func main() {
+	// Load the configuration again for server-related settings
 	config, err := initializers.LoadConfig(".")
 	if err != nil {
 		log.Fatal("🚀 Could not load environment variables", err)
 	}
 
+	// Set up CORS configuration
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = []string{"http://localhost:8000", config.ClientOrigin}
 	corsConfig.AllowCredentials = true
 
+	// Use CORS middleware
 	server.Use(cors.New(corsConfig))
 
+	// Define API group and health check route
 	router := server.Group("/api")
 	router.GET("/healthchecker", func(ctx *gin.Context) {
 		message := "Welcome to Golang with Gorm and Postgres"
 		ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": message})
 	})
 
+	// Register routes for various controllers
 	AuthRouteController.AuthRoute(router)
 	UserRouteController.UserRoute(router)
 	PostRouteController.PostRoute(router)
+
+	// Register Contractor routes
+	ContractorRouteController.ContractorRoute(router)
+
+	// Register Driver routes
+	DriverRouteController.DriverRoute(router)
+
+	// Register Truck routes
+	TruckRouteController.TruckRoute(router)
+
+	// Start the server
 	log.Fatal(server.Run(":" + config.ServerPort))
 }
