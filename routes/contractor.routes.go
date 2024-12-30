@@ -18,8 +18,8 @@ func (rc *ContractorRouteController) ContractorRoute(rg *gin.RouterGroup) {
 	router := rg.Group("contractors")
 	router.Use(middleware.DeserializeUser())
 
-	router.POST("/", rc.contractorController.CreateContractor)
-	router.GET("/", rc.contractorController.FindContractors)
+	router.POST("", rc.contractorController.CreateContractor)
+	router.GET("", rc.contractorController.FindContractors)
 	router.PUT("/:contractorId", rc.contractorController.UpdateContractor)
 	router.DELETE("/:contractorId", rc.contractorController.DeleteContractor)
 }

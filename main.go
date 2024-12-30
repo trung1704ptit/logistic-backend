@@ -71,7 +71,7 @@ func main() {
 
 	// Set up CORS configuration
 	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowOrigins = []string{"http://localhost:8000", config.ClientOrigin}
+	corsConfig.AllowOrigins = []string{"http://localhost:8000", "http://localhost:5173", config.ClientOrigin}
 	corsConfig.AllowCredentials = true
 
 	// Use CORS middleware

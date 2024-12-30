@@ -16,8 +16,8 @@ func NewTruckRouteController(truckController controllers.TruckController) TruckR
 func (rc *TruckRouteController) TruckRoute(rg *gin.RouterGroup) {
 	router := rg.Group("trucks")
 
-	router.POST("/", rc.truckController.CreateTruck)
-	router.GET("/", rc.truckController.FindTrucks)
+	router.POST("", rc.truckController.CreateTruck)
+	router.GET("", rc.truckController.FindTrucks)
 	router.POST("/:truckId", rc.truckController.UpdateTruck)
 	router.GET("/:truckId", rc.truckController.FindTruckById)
 	router.DELETE("/:truckId", rc.truckController.DeleteTruck)
