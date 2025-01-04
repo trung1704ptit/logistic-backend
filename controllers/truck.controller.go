@@ -16,123 +16,122 @@ type TruckController struct {
 }
 
 func NewTruckController(DB *gorm.DB) TruckController {
-	return TruckController{DB}
+	return TruckController{DB: DB}
 }
 
 // CreateTruck handles creating a new truck record.
 func (tc *TruckController) CreateTruck(ctx *gin.Context) {
-	var payload *models.CreateTruckRequest
+	var payload models.CreateTruckRequest
 
-	// Bind the incoming JSON payload to the CreateTruckRequest struct
+	// Bind JSON payload
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
-	// Convert the Contractor string (UUID) to uuid.UUID
+	// Parse ContractorID
 	var contractorUUID uuid.UUID
-	if payload.Contractor != "" {
-		contractorID, err := uuid.Parse(payload.Contractor)
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid contractor UUID"})
-			return
-		}
-		contractorUUID = contractorID
+	if payload.ContractorID != uuid.Nil {
+		contractorUUID = payload.ContractorID
 	}
 
-	// Set the current time for the truck's CreatedAt and UpdatedAt fields
-	now := time.Now()
+	// Initialize the new truck
 	newTruck := models.Truck{
+		ID:           uuid.New(),
 		LicensePlate: payload.LicensePlate,
 		Capacity:     payload.Capacity,
 		Length:       payload.Length,
 		Width:        payload.Width,
 		Height:       payload.Height,
 		Volume:       payload.Volume,
-		VehicleType:  payload.VehicleType,
-		Brand:        payload.Brand,  // Added brand field
-		ContractorID: contractorUUID, // Set the Contractor ID
+		Brand:        payload.Brand,
+		ContractorID: contractorUUID,
 		Note:         payload.Note,
-		Status:       payload.Status, // Set the status
-		CreatedAt:    now,
-		UpdatedAt:    now,
+		Status:       strings.ToLower(payload.Status),
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
 	}
 
-	// Create the new truck in the database
+	// Insert the new truck into the database
 	result := tc.DB.Create(&newTruck)
 	if result.Error != nil {
 		if strings.Contains(result.Error.Error(), "duplicate key") {
 			ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": "Truck with that license plate already exists"})
 			return
 		}
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": result.Error.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": result.Error.Error()})
 		return
 	}
 
-	// Return the created truck as a response
 	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": newTruck})
 }
 
 // UpdateTruck handles updating an existing truck record.
 func (tc *TruckController) UpdateTruck(ctx *gin.Context) {
-	truckId := ctx.Param("truckId")
+	truckID := ctx.Param("truckId")
+	var payload models.UpdateTruckRequest
 
-	var payload *models.UpdateTruckRequest
+	// Bind JSON payload
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
-	// Find the truck by its ID
-	var updatedTruck models.Truck
-	result := tc.DB.First(&updatedTruck, "id = ?", truckId)
+	// Fetch the truck record
+	var truck models.Truck
+	result := tc.DB.First(&truck, "id = ?", truckID)
 	if result.Error != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "Truck not found"})
 		return
 	}
 
-	// Convert the Contractor string (UUID) to uuid.UUID if provided
-	var contractorUUID uuid.UUID
-	if payload.Contractor != "" {
-		contractorID, err := uuid.Parse(payload.Contractor)
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid contractor UUID"})
-			return
-		}
-		contractorUUID = contractorID
+	// Update fields only if they are provided
+	updates := map[string]interface{}{
+		"UpdatedAt": time.Now(),
+	}
+	if payload.LicensePlate != "" {
+		updates["LicensePlate"] = payload.LicensePlate
+	}
+	if payload.Capacity != 0 {
+		updates["Capacity"] = payload.Capacity
+	}
+	if payload.Length != 0 {
+		updates["Length"] = payload.Length
+	}
+	if payload.Width != 0 {
+		updates["Width"] = payload.Width
+	}
+	if payload.Height != 0 {
+		updates["Height"] = payload.Height
+	}
+	if payload.Volume != 0 {
+		updates["Volume"] = payload.Volume
+	}
+	if payload.Brand != "" {
+		updates["Brand"] = payload.Brand
+	}
+	if payload.ContractorID != uuid.Nil {
+		updates["ContractorID"] = payload.ContractorID
+	}
+	if payload.Note != "" {
+		updates["Note"] = payload.Note
+	}
+	if payload.Status != "" {
+		updates["Status"] = strings.ToLower(payload.Status)
 	}
 
-	// Set the current time for updating the truck's UpdatedAt field
-	now := time.Now()
-	truckToUpdate := models.Truck{
-		LicensePlate: payload.LicensePlate,
-		Capacity:     payload.Capacity,
-		Length:       payload.Length,
-		Width:        payload.Width,
-		Height:       payload.Height,
-		Volume:       payload.Volume,
-		VehicleType:  payload.VehicleType,
-		Brand:        payload.Brand,  // Update brand field
-		ContractorID: contractorUUID, // Update contractor UUID
-		Note:         payload.Note,
-		Status:       payload.Status, // Update the status
-		CreatedAt:    updatedTruck.CreatedAt,
-		UpdatedAt:    now,
-	}
+	// Apply updates
+	tc.DB.Model(&truck).Updates(updates)
 
-	// Update the truck in the database
-	tc.DB.Model(&updatedTruck).Updates(truckToUpdate)
-
-	// Return the updated truck
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": updatedTruck})
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": truck})
 }
 
 // FindTruckById handles retrieving a truck by its ID.
 func (tc *TruckController) FindTruckById(ctx *gin.Context) {
-	truckId := ctx.Param("truckId")
+	truckID := ctx.Param("truckId")
 
 	var truck models.Truck
-	result := tc.DB.Preload("Contractor").First(&truck, "id = ?", truckId)
+	result := tc.DB.Preload("Contractor").First(&truck, "id = ?", truckID)
 	if result.Error != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "Truck not found"})
 		return
@@ -146,7 +145,7 @@ func (tc *TruckController) FindTrucks(ctx *gin.Context) {
 	var trucks []models.Truck
 	result := tc.DB.Preload("Contractor").Find(&trucks)
 	if result.Error != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": result.Error.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": result.Error.Error()})
 		return
 	}
 
@@ -155,20 +154,20 @@ func (tc *TruckController) FindTrucks(ctx *gin.Context) {
 
 // DeleteTruck handles deleting a truck by its ID.
 func (tc *TruckController) DeleteTruck(ctx *gin.Context) {
-	truckId := ctx.Param("truckId")
+	truckID := ctx.Param("truckId")
 
 	var truck models.Truck
-	result := tc.DB.First(&truck, "id = ?", truckId)
+	result := tc.DB.First(&truck, "id = ?", truckID)
 	if result.Error != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "Truck not found"})
 		return
 	}
 
-	// Delete the truck from the database
+	// Delete the truck
 	if err := tc.DB.Delete(&truck).Error; err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusNoContent, nil)
+	ctx.JSON(http.StatusNoContent, gin.H{"status": "success", "message": "Truck deleted successfully"})
 }
