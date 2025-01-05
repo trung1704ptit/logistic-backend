@@ -4,22 +4,24 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Driver struct {
-	ID            uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key" json:"id,omitempty"`
-	FullName      string    `gorm:"not null" json:"full_name,omitempty"`
-	Phone         string    `gorm:"not null" json:"phone,omitempty"`
-	CCCD          string    `gorm:"not null" json:"cccd,omitempty"`
-	IssueDate     time.Time `json:"issue_date,omitempty"` // Time should be in a proper format
-	DateOfBirth   time.Time `gorm:"not null" json:"date_of_birth,omitempty"`
-	Address       string    `gorm:"not null" json:"address,omitempty"`
-	LicenseNumber string    `gorm:"not null" json:"license_number,omitempty"`
-	LicenseExpiry time.Time `gorm:"not null" json:"license_expiry,omitempty"`
-	ContractorID  uuid.UUID `gorm:"type:uuid" json:"contractor_id,omitempty"` // foreign key to Contractor
-	Note          string    `json:"note,omitempty"`
-	CreatedAt     time.Time `gorm:"not null" json:"created_at,omitempty"`
-	UpdatedAt     time.Time `gorm:"not null" json:"updated_at,omitempty"`
+	ID            uuid.UUID      `gorm:"type:uuid;default:uuid_generate_v4();primary_key" json:"id,omitempty"`
+	FullName      string         `gorm:"not null" json:"full_name,omitempty"`
+	Phone         string         `gorm:"not null" json:"phone,omitempty"`
+	CCCD          string         `gorm:"not null" json:"cccd,omitempty"`
+	IssueDate     time.Time      `json:"issue_date,omitempty"` // Time should be in a proper format
+	DateOfBirth   time.Time      `gorm:"not null" json:"date_of_birth,omitempty"`
+	Address       string         `gorm:"not null" json:"address,omitempty"`
+	LicenseNumber string         `gorm:"not null" json:"license_number,omitempty"`
+	LicenseExpiry time.Time      `gorm:"not null" json:"license_expiry,omitempty"`
+	ContractorID  uuid.UUID      `gorm:"type:uuid" json:"contractor_id,omitempty"` // foreign key to Contractor
+	Note          string         `json:"note,omitempty"`
+	CreatedAt     time.Time      `gorm:"not null" json:"created_at,omitempty"`
+	UpdatedAt     time.Time      `gorm:"not null" json:"updated_at,omitempty"`
+	DeletedAt     gorm.DeletedAt `gorm:"index"`
 
 	// Association with Contractor
 	Contractor Contractor `gorm:"foreignKey:ContractorID" json:"contractor,omitempty"`

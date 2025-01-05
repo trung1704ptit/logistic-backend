@@ -4,18 +4,21 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Contractor struct {
-	ID        uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key" json:"id,omitempty"`
-	Name      string    `gorm:"not null" json:"name,omitempty"`
-	Phone     string    `gorm:"not null" json:"phone,omitempty"`
-	Address   string    `gorm:"not null" json:"address,omitempty"`
-	Note      string    `json:"note,omitempty"`
-	CreatedAt time.Time `gorm:"not null" json:"created_at,omitempty"`
-	UpdatedAt time.Time `gorm:"not null" json:"updated_at,omitempty"`
-	Drivers   []Driver  `gorm:"foreignKey:ContractorID" json:"drivers,omitempty"` // One-to-many relation with Driver
-	Trucks    []Truck   `gorm:"foreignKey:ContractorID" json:"trucks,omitempty"`  // One-to-many relation with Truck
+	ID        uuid.UUID      `gorm:"type:uuid;default:uuid_generate_v4();primary_key" json:"id,omitempty"`
+	Name      string         `gorm:"not null" json:"name,omitempty"`
+	Phone     string         `gorm:"not null" json:"phone,omitempty"`
+	Address   string         `gorm:"not null" json:"address,omitempty"`
+	Note      string         `json:"note,omitempty"`
+	CreatedAt time.Time      `gorm:"not null" json:"created_at,omitempty"`
+	UpdatedAt time.Time      `gorm:"not null" json:"updated_at,omitempty"`
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+
+	Drivers []Driver `gorm:"foreignKey:ContractorID" json:"drivers,omitempty"` // One-to-many relation with Driver
+	Trucks  []Truck  `gorm:"foreignKey:ContractorID" json:"trucks,omitempty"`  // One-to-many relation with Truck
 }
 
 type CreateContractorRequest struct {

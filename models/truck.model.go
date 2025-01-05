@@ -4,23 +4,25 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 // Truck represents a truck entity with associated details.
 type Truck struct {
-	ID           uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key" json:"id,omitempty"`
-	LicensePlate string    `gorm:"not null" json:"license_plate,omitempty"`
-	Capacity     float64   `gorm:"not null" json:"capacity,omitempty"`
-	Length       float64   `gorm:"not null" json:"length,omitempty"`
-	Width        float64   `gorm:"not null" json:"width,omitempty"`
-	Height       float64   `gorm:"not null" json:"height,omitempty"`
-	Volume       float64   `gorm:"not null" json:"volume,omitempty"`
-	Brand        string    `json:"brand,omitempty"`                          // Truck brand
-	ContractorID uuid.UUID `gorm:"type:uuid" json:"contractor_id,omitempty"` // Foreign key for Contractor
-	Note         string    `json:"note,omitempty"`
-	Status       string    `gorm:"not null;default:'active'" json:"status,omitempty"` // Default to 'active'
-	CreatedAt    time.Time `gorm:"not null" json:"created_at,omitempty"`
-	UpdatedAt    time.Time `gorm:"not null" json:"updated_at,omitempty"`
+	ID           uuid.UUID      `gorm:"type:uuid;default:uuid_generate_v4();primary_key" json:"id,omitempty"`
+	LicensePlate string         `gorm:"not null" json:"license_plate,omitempty"`
+	Capacity     float64        `gorm:"not null" json:"capacity,omitempty"`
+	Length       float64        `gorm:"not null" json:"length,omitempty"`
+	Width        float64        `gorm:"not null" json:"width,omitempty"`
+	Height       float64        `gorm:"not null" json:"height,omitempty"`
+	Volume       float64        `gorm:"not null" json:"volume,omitempty"`
+	Brand        string         `json:"brand,omitempty"`                          // Truck brand
+	ContractorID uuid.UUID      `gorm:"type:uuid" json:"contractor_id,omitempty"` // Foreign key for Contractor
+	Note         string         `json:"note,omitempty"`
+	Status       string         `gorm:"not null;default:'active'" json:"status,omitempty"` // Default to 'active'
+	CreatedAt    time.Time      `gorm:"not null" json:"created_at,omitempty"`
+	UpdatedAt    time.Time      `gorm:"not null" json:"updated_at,omitempty"`
+	DeletedAt    gorm.DeletedAt `gorm:"index"`
 
 	// Association
 	Contractor Contractor `gorm:"foreignKey:ContractorID" json:"contractor,omitempty"` // Contractor relationship

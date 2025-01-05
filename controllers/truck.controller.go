@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 	"time"
@@ -156,14 +157,23 @@ func (tc *TruckController) FindTrucks(ctx *gin.Context) {
 func (tc *TruckController) DeleteTruck(ctx *gin.Context) {
 	truckID := ctx.Param("truckId")
 
-	var truck models.Truck
-	result := tc.DB.First(&truck, "id = ?", truckID)
-	if result.Error != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "Truck not found"})
+	if _, err := uuid.Parse(truckID); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid truck ID format"})
 		return
 	}
 
-	// Delete the truck
+	var truck models.Truck
+	result := tc.DB.First(&truck, "id = ?", truckID)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "Truck not found"})
+			return
+		}
+		ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": result.Error.Error()})
+		return
+	}
+
+	// Perform Soft Delete
 	if err := tc.DB.Delete(&truck).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": err.Error()})
 		return
