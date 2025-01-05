@@ -22,10 +22,10 @@ type Truck struct {
 	Status       string         `gorm:"not null;default:'active'" json:"status,omitempty"` // Default to 'active'
 	CreatedAt    time.Time      `gorm:"not null" json:"created_at,omitempty"`
 	UpdatedAt    time.Time      `gorm:"not null" json:"updated_at,omitempty"`
-	DeletedAt    gorm.DeletedAt `gorm:"index"`
+	DeletedAt    gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
 
 	// Association
-	Contractor Contractor `gorm:"foreignKey:ContractorID" json:"contractor,omitempty"` // Contractor relationship
+	Contractor Contractor `gorm:"foreignKey:ContractorID" json:"-"`
 }
 
 // CreateTruckRequest represents the request payload for creating a truck.

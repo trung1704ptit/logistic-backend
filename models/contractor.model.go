@@ -15,7 +15,7 @@ type Contractor struct {
 	Note      string         `json:"note,omitempty"`
 	CreatedAt time.Time      `gorm:"not null" json:"created_at,omitempty"`
 	UpdatedAt time.Time      `gorm:"not null" json:"updated_at,omitempty"`
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
 
 	Drivers []Driver `gorm:"foreignKey:ContractorID" json:"drivers,omitempty"` // One-to-many relation with Driver
 	Trucks  []Truck  `gorm:"foreignKey:ContractorID" json:"trucks,omitempty"`  // One-to-many relation with Truck

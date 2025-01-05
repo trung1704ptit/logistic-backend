@@ -21,10 +21,10 @@ type Driver struct {
 	Note          string         `json:"note,omitempty"`
 	CreatedAt     time.Time      `gorm:"not null" json:"created_at,omitempty"`
 	UpdatedAt     time.Time      `gorm:"not null" json:"updated_at,omitempty"`
-	DeletedAt     gorm.DeletedAt `gorm:"index"`
+	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
 
 	// Association with Contractor
-	Contractor Contractor `gorm:"foreignKey:ContractorID" json:"contractor,omitempty"`
+	Contractor Contractor `gorm:"foreignKey:ContractorID" json:"-"`
 }
 
 type CreateDriverRequest struct {
