@@ -1,6 +1,7 @@
 package initializers
 
 import (
+	"os"
 	"time"
 
 	"github.com/spf13/viper"
@@ -24,20 +25,44 @@ type Config struct {
 	RefreshTokenExpiresIn  time.Duration `mapstructure:"REFRESH_TOKEN_EXPIRED_IN"`
 	AccessTokenMaxAge      int           `mapstructure:"ACCESS_TOKEN_MAXAGE"`
 	RefreshTokenMaxAge     int           `mapstructure:"REFRESH_TOKEN_MAXAGE"`
+
+	UploadFilePath string `mapstructure:"UPLOAD_FILE_PATH"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
+	// Default environment is dev, you can change this based on your needs
+	env := os.Getenv("APP_ENV")
+	if env == "" {
+		env = "dev" // default to dev if not set
+	}
+
+	// Determine which config file to load based on the environment
+	var configFile string
+	if env == "dev" {
+		configFile = "app.dev.env"
+	} else {
+		configFile = "app.prod.env"
+	}
+
+	// Set the path and file for viper
 	viper.AddConfigPath(path)
 	viper.SetConfigType("env")
-	viper.SetConfigName("app")
+	viper.SetConfigName(configFile)
 
+	// Automatically read environment variables
 	viper.AutomaticEnv()
 
+	// Read in the configuration file
 	err = viper.ReadInConfig()
 	if err != nil {
 		return
 	}
 
+	// Unmarshal the config into the struct
 	err = viper.Unmarshal(&config)
-	return
+	if err != nil {
+		return
+	}
+
+	return config, nil
 }

@@ -20,40 +20,40 @@ func NewPricingController(DB *gorm.DB) PricingController {
 
 // CreatePricing handles creating a new pricing record.
 func (pc *PricingController) CreatePricing(ctx *gin.Context) {
-	var payload models.Pricing
+	var payload []models.Pricing // expecting a list of pricing objects
 
-	// Bind JSON payload
+	// Bind the incoming JSON payload (expecting a list of pricing)
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
-	// Convert contractorID to uuid.UUID
-	contractorID, err := uuid.Parse(ctx.Param("contractorId"))
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid contractor ID"})
-		return
+	// Iterate through the pricing list and process each entry
+	for _, price := range payload {
+		// Convert contractorID to uuid.UUID
+		contractorID, err := uuid.Parse(price.ContractorID.String())
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid contractor ID"})
+			return
+		}
+
+		// Set version for new pricing
+		if price.FileName == "" {
+			price.FileName = time.Now().Format(time.RFC3339) // Set version as current timestamp
+		}
+
+		price.ContractorID = contractorID // Set the contractor ID after converting it to UUID
+		price.CreatedAt = time.Now()
+		price.UpdatedAt = time.Now()
+
+		// Insert the new pricing into the database
+		if result := pc.DB.Create(&price); result.Error != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": result.Error.Error()})
+			return
+		}
 	}
 
-	// Set version for new pricing
-	if payload.Version == "" {
-		payload.Version = time.Now().Format(time.RFC3339) // Set version as current timestamp
-	}
-
-	// Set IsCurrent to true for new pricing
-	payload.IsCurrent = true
-	payload.ContractorID = contractorID // Set the contractor ID after converting it to UUID
-	payload.CreatedAt = time.Now()
-	payload.UpdatedAt = time.Now()
-
-	// Insert the new pricing into the database
-	result := pc.DB.Create(&payload)
-	if result.Error != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": result.Error.Error()})
-		return
-	}
-
-	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": payload})
+	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "message": "Pricing records created successfully"})
 }
 
 // FindAllPricing handles retrieving all pricing records for a contractor.
@@ -117,17 +117,17 @@ func (pc *PricingController) UpdatePricing(ctx *gin.Context) {
 	// Update fields if provided
 	updates := map[string]interface{}{"UpdatedAt": time.Now()}
 
-	if payload.FromLocationCity != "" {
-		updates["FromLocationCity"] = payload.FromLocationCity
+	if payload.FromCity != "" {
+		updates["FromCity"] = payload.FromCity
 	}
-	if payload.FromLocationDistrict != "" {
-		updates["FromLocationDistrict"] = payload.FromLocationDistrict
+	if payload.FromDistrict != "" {
+		updates["FromDistrict"] = payload.FromDistrict
 	}
-	if payload.ToLocationCity != "" {
-		updates["ToLocationCity"] = payload.ToLocationCity
+	if payload.ToCity != "" {
+		updates["ToCity"] = payload.ToCity
 	}
-	if payload.ToLocationDistrict != "" {
-		updates["ToLocationDistrict"] = payload.ToLocationDistrict
+	if payload.ToDistrict != "" {
+		updates["ToDistrict"] = payload.ToDistrict
 	}
 	if len(payload.Prices) > 0 {
 		updates["Prices"] = payload.Prices

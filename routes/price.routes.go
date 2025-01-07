@@ -14,20 +14,20 @@ func NewPricingRouteController(pricingController controllers.PricingController) 
 }
 
 func (rc *PricingRouteController) PricingRoute(rg *gin.RouterGroup) {
-	router := rg.Group("contractors/:contractorId/pricing")
+	router := rg.Group("prices")
 
 	// Route to create new pricing
-	router.POST("", rc.pricingController.CreatePricing)
+	router.POST("/:contractorId", rc.pricingController.CreatePricing)
 
 	// Route to get all pricing entries for a contractor
-	router.GET("", rc.pricingController.FindAllPricing)
+	router.GET("/:contractorId", rc.pricingController.FindAllPricing)
 
 	// Route to get the current pricing for a contractor
-	router.GET("/current", rc.pricingController.GetCurrentPricing)
+	router.GET("/:contractorId/current", rc.pricingController.GetCurrentPricing)
 
 	// Route to update a pricing entry by its ID
-	router.PUT("/:pricingId", rc.pricingController.UpdatePricing)
+	router.PUT("/:contractorId/:pricingId", rc.pricingController.UpdatePricing)
 
 	// Route to delete all pricing entries for a contractor
-	router.DELETE("", rc.pricingController.DeletePricing)
+	router.DELETE("/:contractorId", rc.pricingController.DeletePricing)
 }

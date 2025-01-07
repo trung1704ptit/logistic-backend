@@ -30,6 +30,9 @@ var (
 
 	TruckController      controllers.TruckController
 	TruckRouteController routes.TruckRouteController
+
+	PricingController      controllers.PricingController
+	PricingRouteController routes.PricingRouteController
 )
 
 func init() {
@@ -58,6 +61,9 @@ func init() {
 	TruckController = controllers.NewTruckController(initializers.DB)
 	TruckRouteController = routes.NewTruckRouteController(TruckController)
 
+	PricingController = controllers.NewPricingController(initializers.DB)
+	PricingRouteController = routes.NewPricingRouteController(PricingController)
+
 	// Initialize Gin server
 	server = gin.Default()
 }
@@ -84,10 +90,13 @@ func main() {
 		ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": message})
 	})
 
+	router.POST("/upload", controllers.FileUpload)
+
 	// Register routes for various controllers
 	AuthRouteController.AuthRoute(router)
 	UserRouteController.UserRoute(router)
 	PostRouteController.PostRoute(router)
+	PricingRouteController.PricingRoute(router)
 
 	// Register Contractor routes
 	ContractorRouteController.ContractorRoute(router)
