@@ -19,6 +19,7 @@ func init() {
 
 func main() {
 	initializers.DB.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"")
-	initializers.DB.AutoMigrate(&models.User{}, &models.Contractor{}, &models.Truck{}, &models.Driver{}, &models.Pricing{})
+	initializers.DB.AutoMigrate(&models.User{}, &models.Contractor{}, &models.Truck{}, &models.Driver{}, &models.Pricing{},
+		&models.PriceDetail{})
 	fmt.Println("👍 Migration complete")
 }
