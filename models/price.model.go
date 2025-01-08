@@ -6,17 +6,21 @@ import (
 	"github.com/google/uuid"
 )
 
+type PriceDetail struct {
+	ID           uuid.UUID          `gorm:"type:uuid;default:uuid_generate_v4();primary_key" json:"id,omitempty"`
+	FromProvince string             `json:"from_province"`
+	FromDistrict string             `json:"from_district"`
+	ToProvince   string             `json:"to_province"`
+	ToDistrict   string             `json:"to_district"`
+	Notes        string             `json:"notes"`
+	WeightPrices map[string]float64 `json:"weight_prices"`
+}
+
 type Pricing struct {
-	ID           uint                   `gorm:"primaryKey" json:"id"`                                                  // ID của bản ghi
-	ContractorID uuid.UUID              `gorm:"type:uuid" json:"contractor_id,omitempty"`                              // Foreign key for Contractor                                  // ID của nhà thầu
-	Contractor   Contractor             `gorm:"foreignKey:ContractorID;constraint:OnDelete:CASCADE" json:"contractor"` // Mối quan hệ với nhà thầu
-	FromCity     string                 `gorm:"not null" json:"from_city"`                                             // Thành phố lấy hàng
-	FromDistrict string                 `gorm:"not null" json:"from_district"`                                         // Quận/Huyện lấy hàng
-	ToCity       string                 `gorm:"not null" json:"to_city"`                                               // Thành phố trả hàng
-	ToDistrict   string                 `gorm:"not null" json:"to_district"`                                           // Quận/Huyện trả hàng
-	Prices       map[string]interface{} `gorm:"type:jsonb;not null" json:"prices"`                                     // Giá theo các loại tải trọng (theo tấn, khối)
-	Note         string                 `json:"note"`                                                                  // Ghi chú về bảng giá
-	FileName     string                 `gorm:"not null" json:"file_name"`                                             // Phiên bản của bảng giá (dạng timestamp)
-	CreatedAt    time.Time              `json:"created_at"`                                                            // Thời gian tạo
-	UpdatedAt    time.Time              `json:"updated_at"`                                                            // Thời gian cập nhật
+	ID           uuid.UUID     `gorm:"type:uuid;default:uuid_generate_v4();primary_key" json:"id,omitempty"`
+	ContractorID uuid.UUID     `gorm:"type:uuid" json:"contractor_id,omitempty"`
+	FileName     string        `gorm:"not null" json:"file_name"`
+	Prices       []PriceDetail `gorm:"type:jsonb;not null" json:"prices"`
+	CreatedAt    time.Time     `json:"created_at"`
+	UpdatedAt    time.Time     `json:"updated_at"`
 }

@@ -18,148 +18,203 @@ func NewPricingController(DB *gorm.DB) PricingController {
 	return PricingController{DB: DB}
 }
 
-// CreatePricing handles creating a new pricing record.
 func (pc *PricingController) CreatePricing(ctx *gin.Context) {
-	var payload []models.Pricing // expecting a list of pricing objects
+	var payload []models.Pricing // Expecting an array of Pricing objects
 
-	// Bind the incoming JSON payload (expecting a list of pricing)
+	// Bind the incoming JSON payload
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
-	// Iterate through the pricing list and process each entry
-	for _, price := range payload {
-		// Convert contractorID to uuid.UUID
-		contractorID, err := uuid.Parse(price.ContractorID.String())
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid contractor ID"})
+	// Start transaction
+	tx := pc.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	for i, pricing := range payload {
+		// Validate ContractorID
+		if pricing.ContractorID == uuid.Nil {
+			tx.Rollback()
+			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Contractor ID is required", "index": i})
 			return
 		}
 
-		// Set version for new pricing
-		if price.FileName == "" {
-			price.FileName = time.Now().Format(time.RFC3339) // Set version as current timestamp
+		// Validate FileName
+		if pricing.FileName == "" {
+			tx.Rollback()
+			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "FileName is required", "index": i})
+			return
 		}
 
-		price.ContractorID = contractorID // Set the contractor ID after converting it to UUID
-		price.CreatedAt = time.Now()
-		price.UpdatedAt = time.Now()
+		// Set metadata fields
+		pricing.ID = uuid.New()
+		pricing.CreatedAt = time.Now()
+		pricing.UpdatedAt = time.Now()
 
-		// Insert the new pricing into the database
-		if result := pc.DB.Create(&price); result.Error != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": result.Error.Error()})
+		// Insert the pricing record
+		if err := tx.Create(&pricing).Error; err != nil {
+			tx.Rollback()
+			ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error(), "index": i})
 			return
+		}
+
+		// Insert nested PriceDetails
+		for j, priceDetail := range pricing.Prices {
+			priceDetail.ID = uuid.New()          // Generate a new ID for each PriceDetail
+			priceDetail.Notes = pricing.FileName // Associate notes with the FileName if applicable
+
+			if err := tx.Create(&priceDetail).Error; err != nil {
+				tx.Rollback()
+				ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error(), "index": j})
+				return
+			}
 		}
 	}
 
+	tx.Commit()
 	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "message": "Pricing records created successfully"})
 }
 
-// FindAllPricing handles retrieving all pricing records for a contractor.
 func (pc *PricingController) FindAllPricing(ctx *gin.Context) {
 	contractorID := ctx.Param("contractorId")
 
-	var prices []models.Pricing
-	result := pc.DB.Where("contractor_id = ?", contractorID).Find(&prices)
+	// Parse ContractorID to UUID
+	contractorIDUUID, err := uuid.Parse(contractorID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid contractor ID"})
+		return
+	}
 
+	// Get the list of pricing records for the contractor, ordered by CreatedAt
+	var prices []models.Pricing
+	result := pc.DB.Where("contractor_id = ?", contractorIDUUID).
+		Order("created_at DESC"). // Order by CreatedAt in descending order
+		Find(&prices)
+
+	// Check for errors
 	if result.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": result.Error.Error()})
 		return
 	}
 
+	// If no records are found
 	if len(prices) == 0 {
-		ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "No pricing found for the contractor"})
+		ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "No pricing records found for the contractor"})
 		return
 	}
 
+	// Return the list of pricing records
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": prices})
 }
 
-// GetCurrentPricing retrieves the current pricing version for a specific contractor.
 func (pc *PricingController) GetCurrentPricing(ctx *gin.Context) {
 	contractorID := ctx.Param("contractorId")
 
+	// Parse ContractorID to UUID
+	contractorIDUUID, err := uuid.Parse(contractorID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid contractor ID"})
+		return
+	}
+
+	// Fetch the most recent pricing for the given contractor based on CreatedAt
 	var pricing models.Pricing
-	result := pc.DB.Where("contractor_id = ? AND is_current = ?", contractorID, true).First(&pricing)
+	result := pc.DB.Where("contractor_id = ?", contractorIDUUID).
+		Order("created_at DESC"). // Order by CreatedAt in descending order (most recent first)
+		First(&pricing)           // Fetch the most recent pricing record
 
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
-			ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "No current pricing found for the contractor"})
+			ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "No pricing found for the contractor"})
 		} else {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": result.Error.Error()})
 		}
 		return
 	}
 
+	// Return the most recent pricing data
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": pricing})
 }
 
-// UpdatePricing handles updating a pricing record by its ID.
 func (pc *PricingController) UpdatePricing(ctx *gin.Context) {
 	pricingID := ctx.Param("pricingId")
 	var payload models.Pricing
 
-	// Bind JSON payload
+	// Bind the JSON payload
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
-	// Fetch the pricing record
+	// Fetch the existing pricing record
 	var pricing models.Pricing
-	result := pc.DB.First(&pricing, "id = ?", pricingID)
-	if result.Error != nil {
+	if err := pc.DB.Preload("Prices").First(&pricing, "id = ?", pricingID).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "Pricing not found"})
 		return
 	}
 
-	// Update fields if provided
-	updates := map[string]interface{}{"UpdatedAt": time.Now()}
+	// Start transaction
+	tx := pc.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
 
-	if payload.FromCity != "" {
-		updates["FromCity"] = payload.FromCity
-	}
-	if payload.FromDistrict != "" {
-		updates["FromDistrict"] = payload.FromDistrict
-	}
-	if payload.ToCity != "" {
-		updates["ToCity"] = payload.ToCity
-	}
-	if payload.ToDistrict != "" {
-		updates["ToDistrict"] = payload.ToDistrict
-	}
-	if len(payload.Prices) > 0 {
-		updates["Prices"] = payload.Prices
-	}
-	if payload.Note != "" {
-		updates["Note"] = payload.Note
-	}
+	// Update pricing fields
+	pricing.ContractorID = payload.ContractorID
+	pricing.FileName = payload.FileName
+	pricing.UpdatedAt = time.Now()
 
-	// Apply updates
-	pc.DB.Model(&pricing).Updates(updates)
-
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": pricing})
-}
-
-// DeletePricing handles deleting all pricing records for a contractor.
-func (pc *PricingController) DeletePricing(ctx *gin.Context) {
-	contractorIDStr := ctx.Param("contractorId")
-
-	// Convert contractorID to uuid.UUID
-	contractorID, err := uuid.Parse(contractorIDStr)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid contractor ID"})
+	if err := tx.Save(&pricing).Error; err != nil {
+		tx.Rollback()
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
-	// Delete all pricing records for the contractor
+	// Replace PriceDetails
+	if err := tx.Where("pricing_id = ?", pricing.ID).Delete(&models.PriceDetail{}).Error; err != nil {
+		tx.Rollback()
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
+
+	for _, priceDetail := range payload.Prices {
+		priceDetail.ID = uuid.New()          // Generate a new ID for each PriceDetail
+		priceDetail.Notes = pricing.FileName // Associate notes with the FileName if applicable
+
+		if err := tx.Create(&priceDetail).Error; err != nil {
+			tx.Rollback()
+			ctx.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": err.Error()})
+			return
+		}
+	}
+
+	tx.Commit()
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": pricing})
+}
+
+func (pc *PricingController) DeletePricing(ctx *gin.Context) {
+	contractorIDStr := ctx.Param("contractorId")
+
+	// Parse ContractorID to UUID
+	contractorID, err := uuid.Parse(contractorIDStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid Contractor ID"})
+		return
+	}
+
+	// Delete all Pricing records for the contractor
 	result := pc.DB.Where("contractor_id = ?", contractorID).Delete(&models.Pricing{})
 	if result.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": result.Error.Error()})
 		return
 	}
 
-	// Respond with success
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": "Pricing records deleted successfully"})
+	// Respond with success message
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": "All pricing records deleted successfully"})
 }
