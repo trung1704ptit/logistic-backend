@@ -61,27 +61,27 @@ func (pc *PricingController) CreatePricing(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": pricing})
 }
 
-// GetPricingsByContractorID retrieves pricings and their details for a specific contractor
-// GetPricingByContractorID retrieves a single pricing and its details for a specific contractor
-func (pc *PricingController) GetPricingByContractorID(ctx *gin.Context) {
+func (pc *PricingController) FindPricingListByContractorID(ctx *gin.Context) {
 	contractorID := ctx.Param("contractorId")
 
-	var pricing models.Pricing
-	query := pc.DB.Preload("PriceDetails").Where("contractor_id = ?", contractorID)
+	// Use a slice to hold multiple pricings
+	var pricings []models.Pricing
+	query := pc.DB.Where("contractor_id = ?", contractorID)
 
-	if err := query.First(&pricing).Error; err != nil {
+	if err := query.Find(&pricings).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "Pricing not found"})
+			ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "No pricings found for this contractor"})
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": pricing})
+	// Return the list of pricings
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": pricings})
 }
 
-func (pc *PricingController) GetLatestPricingByContractorID(c *gin.Context) {
+func (pc *PricingController) FindLatestPricingByContractorID(c *gin.Context) {
 	// Parse contractor ID from the request
 	contractorID := c.Param("contractorId")
 	var latestPricing models.Pricing

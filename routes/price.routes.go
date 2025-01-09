@@ -20,10 +20,10 @@ func (rc *PricingRouteController) PricingRoute(rg *gin.RouterGroup) {
 	router.POST("/:contractorId", rc.pricingController.CreatePricing)
 
 	// // Route to get all pricing entries for a contractor
-	router.GET("/:contractorId", rc.pricingController.GetPricingByContractorID)
+	router.GET("/:contractorId", rc.pricingController.FindPricingListByContractorID)
 
-	// // Route to get the current pricing for a contractor
-	router.GET("/:contractorId/current", rc.pricingController.GetLatestPricingByContractorID)
+	// // Route to get the latest pricing for a contractor
+	router.GET("/:contractorId/latest", rc.pricingController.FindLatestPricingByContractorID)
 
 	// // Route to update a pricing entry by its ID
 	// router.PUT("/:contractorId/:pricingId", rc.pricingController.UpdatePricing)
