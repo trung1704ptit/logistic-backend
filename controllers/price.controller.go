@@ -66,7 +66,7 @@ func (pc *PricingController) FindPricingListByContractorID(ctx *gin.Context) {
 
 	// Use a slice to hold multiple pricings
 	var pricings []models.Pricing
-	query := pc.DB.Where("contractor_id = ?", contractorID)
+	query := pc.DB.Where("contractor_id = ?", contractorID).Order("created_at DESC")
 
 	if err := query.Find(&pricings).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {

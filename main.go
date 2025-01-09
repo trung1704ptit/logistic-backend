@@ -33,6 +33,9 @@ var (
 
 	PricingController      controllers.PricingController
 	PricingRouteController routes.PricingRouteController
+
+	FileController      controllers.FileController
+	FileRouteController routes.FileRouteController
 )
 
 func init() {
@@ -64,6 +67,9 @@ func init() {
 	PricingController = controllers.NewPricingController(initializers.DB)
 	PricingRouteController = routes.NewPricingRouteController(PricingController)
 
+	FileController = controllers.NewFileController(config.UploadFilePath)
+	FileRouteController = routes.NewFileRouteController(FileController)
+
 	// Initialize Gin server
 	server = gin.Default()
 }
@@ -90,8 +96,6 @@ func main() {
 		ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": message})
 	})
 
-	router.POST("/upload", controllers.FileUpload)
-
 	// Register routes for various controllers
 	AuthRouteController.AuthRoute(router)
 	UserRouteController.UserRoute(router)
@@ -103,6 +107,8 @@ func main() {
 
 	// Register Driver routes
 	DriverRouteController.DriverRoute(router)
+
+	FileRouteController.FileRoute(router)
 
 	// Register Truck routes
 	TruckRouteController.TruckRoute(router)
