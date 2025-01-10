@@ -114,5 +114,5 @@ func main() {
 	TruckRouteController.TruckRoute(router)
 
 	// Start the server
-	log.Fatal(server.Run(":" + config.ServerPort))
+	log.Fatal(server.Run("localhost:" + config.ServerPort))
 }

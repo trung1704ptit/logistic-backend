@@ -107,7 +107,7 @@ func (pc *PricingController) FindLatestPricingByContractorID(c *gin.Context) {
 }
 
 // DeletePricingByContractorID deletes pricings and their price details for a specific contractor
-func (pc *PricingController) DeletePricingByContractorID(ctx *gin.Context) {
+func (pc *PricingController) DeleteAllPricingByContractorID(ctx *gin.Context) {
 	contractorID := ctx.Param("contractorId")
 
 	tx := pc.DB.Begin()
@@ -126,4 +126,56 @@ func (pc *PricingController) DeletePricingByContractorID(ctx *gin.Context) {
 
 	tx.Commit()
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": "Pricings deleted successfully"})
+}
+
+// DeletePricingWithDetails deletes a pricing and all its associated price details by contractor_id and pricing_id
+func (pc *PricingController) DeletePricingWithDetails(ctx *gin.Context) {
+	// Extract contractor_id and pricing_id from request parameters
+	contractorIDParam := ctx.Param("contractorId")
+	priceIDParam := ctx.Param("priceId")
+
+	// Validate UUIDs
+	contractorID, err := uuid.Parse(contractorIDParam)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid contractor_id"})
+		return
+	}
+
+	pricingID, err := uuid.Parse(priceIDParam)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid pricing_id"})
+		return
+	}
+
+	tx := pc.DB.Begin()
+
+	// Check if the Pricing exists with the given contractor_id and pricing_id
+	var pricing models.Pricing
+	err = tx.Where("id = ? AND contractor_id = ?", pricingID, contractorID).First(&pricing).Error
+	if err != nil {
+		tx.Rollback()
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "Pricing not found"})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()})
+		return
+	}
+
+	// Delete all associated PriceDetails
+	if err := tx.Where("pricing_id = ?", pricingID).Delete(&models.PriceDetail{}).Error; err != nil {
+		tx.Rollback()
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Failed to delete price details"})
+		return
+	}
+
+	// Delete the Pricing itself
+	if err := tx.Delete(&pricing).Error; err != nil {
+		tx.Rollback()
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Failed to delete pricing"})
+		return
+	}
+
+	tx.Commit()
+	ctx.JSON(http.StatusNoContent, gin.H{"status": "success", "message": "Pricing and its price details deleted successfully"})
 }

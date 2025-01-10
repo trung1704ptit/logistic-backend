@@ -19,15 +19,11 @@ func (rc *PricingRouteController) PricingRoute(rg *gin.RouterGroup) {
 	// Route to create new pricing
 	router.POST("/:contractorId", rc.pricingController.CreatePricing)
 
-	// // Route to get all pricing entries for a contractor
 	router.GET("/:contractorId", rc.pricingController.FindPricingListByContractorID)
 
-	// // Route to get the latest pricing for a contractor
 	router.GET("/:contractorId/latest", rc.pricingController.FindLatestPricingByContractorID)
 
-	// // Route to update a pricing entry by its ID
-	// router.PUT("/:contractorId/:pricingId", rc.pricingController.UpdatePricing)
+	router.DELETE("/:contractorId/:priceId", rc.pricingController.DeletePricingWithDetails)
 
-	// // Route to delete all pricing entries for a contractor
-	// router.DELETE("/:contractorId", rc.pricingController.DeletePricing)
+	router.DELETE("/:contractorId", rc.pricingController.DeleteAllPricingByContractorID)
 }
