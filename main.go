@@ -36,6 +36,9 @@ var (
 
 	FileController      controllers.FileController
 	FileRouteController routes.FileRouteController
+
+	OrderController      controllers.OrderController
+	OrderRouteController routes.OrderRouteController
 )
 
 func init() {
@@ -69,6 +72,10 @@ func init() {
 
 	FileController = controllers.NewFileController(config.UploadFilePath)
 	FileRouteController = routes.NewFileRouteController(FileController)
+
+	// Initialize Order Controller and Route Controller
+	OrderController = controllers.OrderController{DB: initializers.DB}
+	OrderRouteController = routes.NewOrderRouteController(OrderController)
 
 	// Initialize Gin server
 	server = gin.Default()
@@ -108,10 +115,14 @@ func main() {
 	// Register Driver routes
 	DriverRouteController.DriverRoute(router)
 
+	// Register File routes
 	FileRouteController.FileRoute(router)
 
 	// Register Truck routes
 	TruckRouteController.TruckRoute(router)
+
+	// Register Order routes
+	OrderRouteController.OrderRoute(router)
 
 	// Start the server
 	log.Fatal(server.Run("localhost:" + config.ServerPort))
