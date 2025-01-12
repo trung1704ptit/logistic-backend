@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/wpcodevo/golang-gorm-postgres/controllers"
+	"github.com/wpcodevo/golang-gorm-postgres/middleware"
 )
 
 type PricingRouteController struct {
@@ -15,6 +16,7 @@ func NewPricingRouteController(pricingController controllers.PricingController) 
 
 func (rc *PricingRouteController) PricingRoute(rg *gin.RouterGroup) {
 	router := rg.Group("prices")
+	router.Use(middleware.DeserializeUser())
 
 	// Route to create new pricing
 	router.POST("/:contractorId", rc.pricingController.CreatePricing)

@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/wpcodevo/golang-gorm-postgres/controllers"
+	"github.com/wpcodevo/golang-gorm-postgres/middleware"
 )
 
 type OrderRouteController struct {
@@ -15,6 +16,7 @@ func NewOrderRouteController(orderController controllers.OrderController) OrderR
 
 func (rc *OrderRouteController) OrderRoute(rg *gin.RouterGroup) {
 	router := rg.Group("orders")
+	router.Use(middleware.DeserializeUser())
 
 	router.POST("", rc.orderController.CreateOrder)            // Create a new order
 	router.GET("", rc.orderController.GetOrders)               // Get all orders

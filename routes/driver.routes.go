@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/wpcodevo/golang-gorm-postgres/controllers"
+	"github.com/wpcodevo/golang-gorm-postgres/middleware"
 )
 
 type DriverRouteController struct {
@@ -15,6 +16,7 @@ func NewDriverRouteController(driverController controllers.DriverController) Dri
 
 func (rc *DriverRouteController) DriverRoute(rg *gin.RouterGroup) {
 	router := rg.Group("drivers")
+	router.Use(middleware.DeserializeUser())
 
 	router.POST("", rc.driverController.CreateDriver)
 	router.GET("", rc.driverController.FindDrivers)
