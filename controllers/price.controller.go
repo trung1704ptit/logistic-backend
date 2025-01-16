@@ -106,6 +106,33 @@ func (pc *PricingController) FindLatestPricingByContractorID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "success", "data": latestPricing})
 }
 
+func (pc *PricingController) FindPricingByContractorIDAndPriceID(c *gin.Context) {
+	// Parse contractor ID from the request
+	contractorID := c.Param("contractorId")
+	priceID := c.Param("priceId")
+
+	var latestPricing models.Pricing
+
+	// Query the database to get the latest pricing by contractor ID
+	err := pc.DB.Preload("PriceDetails").
+		Where("contractor_id = ? and id = ?", contractorID, priceID).
+		Order("created_at DESC").
+		First(&latestPricing).Error
+
+	// Handle errors or no record found
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "No pricing found for the given contractor ID"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()})
+		return
+	}
+
+	// Return the latest pricing
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": latestPricing})
+}
+
 // DeletePricingByContractorID deletes pricings and their price details for a specific contractor
 func (pc *PricingController) DeleteAllPricingByContractorID(ctx *gin.Context) {
 	contractorID := ctx.Param("contractorId")

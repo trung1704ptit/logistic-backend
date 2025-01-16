@@ -25,6 +25,8 @@ func (rc *PricingRouteController) PricingRoute(rg *gin.RouterGroup) {
 
 	router.GET("/:contractorId/latest", rc.pricingController.FindLatestPricingByContractorID)
 
+	router.GET("/:contractorId/:priceId", rc.pricingController.FindPricingByContractorIDAndPriceID)
+
 	router.DELETE("/:contractorId/:priceId", rc.pricingController.DeletePricingWithDetails)
 
 	router.DELETE("/:contractorId", rc.pricingController.DeleteAllPricingByContractorID)

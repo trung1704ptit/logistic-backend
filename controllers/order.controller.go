@@ -40,7 +40,6 @@ func (ctrl *OrderController) GetOrders(c *gin.Context) {
 	if err := ctrl.DB.Preload("Contractor").
 		Preload("Driver").
 		Preload("Truck").
-		Preload("OtherFees").
 		Find(&orders).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve orders"})
 		return
@@ -56,7 +55,6 @@ func (ctrl *OrderController) GetOrderByID(c *gin.Context) {
 	if err := ctrl.DB.Preload("Contractor").
 		Preload("Driver").
 		Preload("Truck").
-		Preload("OtherFees").
 		First(&order, "id = ?", id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
