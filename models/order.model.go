@@ -17,7 +17,6 @@ type Order struct {
 	TruckID          uuid.UUID  `gorm:"type:uuid;not null" json:"truck_id"`
 	Truck            Truck      `gorm:"foreignKey:TruckID" json:"truck"`
 	PriceID          uuid.UUID  `gorm:"type:uuid;not null" json:"price_id"`
-	Prices           Pricing    `gorm:"foreignKey:PriceID" json:"prices"`
 	PickupProvince   string     `gorm:"size:50;not null" json:"pickup_province"`
 	PickupDistrict   string     `gorm:"size:50" json:"pickup_district"`
 	DeliveryProvince string     `gorm:"size:50;not null" json:"delivery_province"`
@@ -39,6 +38,7 @@ type Order struct {
 	OutsiteOilFee    *float64   `gorm:"not null;default:0" json:"outside_oil_fee"`
 	OilFee           *float64   `gorm:"not null;default:0" json:"oil_fee"`
 	ChargeFee        *float64   `gorm:"not null;default:0" json:"charge_fee"`
+	TotalSalary      *float64   `gorm:"not null;default:0" json:"total_salary"`
 	Notes            string     `gorm:"type:text" json:"notes"`
 	CreatedAt        time.Time  `json:"created_at"`
 	UpdatedAt        time.Time  `json:"updated_at"`
