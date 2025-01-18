@@ -51,6 +51,7 @@ func (dc *DriverController) CreateDriver(ctx *gin.Context) {
 		LicenseNumber: payload.LicenseNumber,
 		LicenseExpiry: payload.LicenseExpiry,
 		ContractorID:  contractorID,
+		FixedSalary:   payload.FixedSalary,
 		Note:          payload.Note,
 		CreatedAt:     now,
 		UpdatedAt:     now,
@@ -139,6 +140,9 @@ func (dc *DriverController) UpdateDriver(ctx *gin.Context) {
 	}
 	if payload.ContractorID != uuid.Nil {
 		driverToUpdate.ContractorID = payload.ContractorID
+	}
+	if payload.FixedSalary != nil {
+		driverToUpdate.FixedSalary = payload.FixedSalary
 	}
 	if payload.Note != "" {
 		driverToUpdate.Note = payload.Note

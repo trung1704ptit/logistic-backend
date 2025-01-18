@@ -95,13 +95,13 @@ func (ctrl *OrderController) UpdateOrder(c *gin.Context) {
 }
 
 // DeleteOrder deletes an order by ID
-func (ctrl *OrderController) DeleteOrder(c *gin.Context) {
-	id := c.Param("id")
+func (ctrl *OrderController) DeleteOrder(ctx *gin.Context) {
+	id := ctx.Param("orderId")
 
 	if err := ctrl.DB.Delete(&models.Order{}, "id = ?", id).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Failed to delete order"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Failed to delete order"})
 		return
 	}
 
-	c.JSON(http.StatusNoContent, gin.H{})
+	ctx.JSON(http.StatusNoContent, nil)
 }
