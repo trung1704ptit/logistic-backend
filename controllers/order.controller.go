@@ -53,6 +53,8 @@ func (ctrl *OrderController) CreateOrder(ctx *gin.Context) {
 func (ctrl *OrderController) GetOrders(ctx *gin.Context) {
 	month := ctx.Query("month")
 	year := ctx.Query("year")
+	driverId := ctx.Query("driver_id")
+	contractorId := ctx.Query("contractor_id")
 
 	// validate the parameters
 	if month == "" || year == "" {
@@ -76,12 +78,22 @@ func (ctrl *OrderController) GetOrders(ctx *gin.Context) {
 
 	// query database with specific month and year
 	var orders []models.Order
-	if err := ctrl.DB.Preload("Contractor").
+	query := ctrl.DB.Preload("Contractor").
 		Preload("Driver").
 		Preload("Truck").
-		Where("EXTRACT(MONTH from updated_at) = ? AND EXTRACT(YEAR FROM updated_at) = ?", monthInt, yearInt).
-		Order("updated_at DESC").
-		Find(&orders).Error; err != nil {
+		Where("EXTRACT(MONTH from updated_at) = ? AND EXTRACT(YEAR FROM updated_at) = ?", monthInt, yearInt)
+
+	// add driver id condition if provided
+	if driverId != "all" && driverId != "" {
+		query.Where("driver_id = ?", driverId)
+	}
+
+	// add contractor id condition if provided
+	if contractorId != "all" && contractorId != "" {
+		query.Where("contractor_id = ?", contractorId)
+	}
+
+	if err := query.Order("updated_at DESC").Find(&orders).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Failed to retrieve orders"})
 		return
 	}
