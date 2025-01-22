@@ -35,21 +35,6 @@ func (ctrl *OrderController) CreateOrder(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": newOrder})
 }
 
-// GetOrders retrieves all orders
-// func (ctrl *OrderController) GetOrders(ctx *gin.Context) {
-// 	var orders []models.Order
-// 	if err := ctrl.DB.Preload("Contractor").
-// 		Preload("Driver").
-// 		Preload("Truck").
-// 		Order("updated_at DESC").
-// 		Find(&orders).Error; err != nil {
-// 		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Failed to retrieve orders"})
-// 		return
-// 	}
-
-// 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": orders})
-// }
-
 func (ctrl *OrderController) GetOrders(ctx *gin.Context) {
 	month := ctx.Query("month")
 	year := ctx.Query("year")
