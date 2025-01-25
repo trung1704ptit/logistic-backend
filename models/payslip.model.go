@@ -33,6 +33,7 @@ type Payslip struct {
 	DepositSalary       *float64   `gorm:"not null;default:0" json:"deposit_salary"`
 	Year                int        `gorm:"not null" json:"year"`
 	Month               int        `gorm:"not null" json:"month"`
+	Submitted           bool       `gorm:"not null;default:true" json:"submitted"`
 	Notes               string     `gorm:"type:text" json:"notes"`
 	CreatedAt           time.Time  `json:"created_at"`
 	UpdatedAt           time.Time  `json:"updated_at"`

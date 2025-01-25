@@ -39,6 +39,9 @@ var (
 
 	OrderController      controllers.OrderController
 	OrderRouteController routes.OrderRouteController
+
+	PayslipController      controllers.PayslipController
+	PayslipRouteController routes.PayslipRouteController
 )
 
 func init() {
@@ -76,6 +79,9 @@ func init() {
 	// Initialize Order Controller and Route Controller
 	OrderController = controllers.OrderController{DB: initializers.DB}
 	OrderRouteController = routes.NewOrderRouteController(OrderController)
+
+	PayslipController = controllers.PayslipController{DB: initializers.DB}
+	PayslipRouteController = routes.NewPayslipRouteController(PayslipController)
 
 	// Initialize Gin server
 	server = gin.Default()
@@ -123,6 +129,9 @@ func main() {
 
 	// Register Order routes
 	OrderRouteController.OrderRoute(router)
+
+	// Register Payslip routes
+	PayslipRouteController.PayslipRoute(router)
 
 	// Start the server
 	log.Fatal(server.Run("localhost:" + config.ServerPort))
