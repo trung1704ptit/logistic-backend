@@ -1,20 +1,20 @@
 version: '3.8'
 
 services:
-  logistic_db:
+  app_db:
     image: postgres
-    container_name: logistic_db
+    container_name: app_db
     ports:
-      - "6500:5432"
+      - "5432:5432"
     env_file:
       - ./app.dev.env
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
-      - logistic_app
+      - app_network
 
-  logistic_api:
-    container_name: logistic_api
+  app_backend:
+    container_name: app_backend
     build: .
     ports:
       - 8000:8000
@@ -23,15 +23,16 @@ services:
       - logistic_volumes:/usr/src/app/                # Mount the app source code
       - upload_files:/usr/src/app/uploads/          # Mount the upload folder to persist files
     depends_on:
-      - logistic_db
+      - app_db
     networks:
-      - logistic_app
+      - app_network
+    entrypoint: ["/bin/sh", "-c", "go run migrate/migrate.go && go run main.go"]
 
 volumes:
   pgdata:
   logistic_volumes:
-  upload_files:  # Define a volume for storing uploaded files
+  upload_files:
 
 networks:
-  logistic_app:
+  app_network:
     driver: bridge

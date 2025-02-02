@@ -32,9 +32,6 @@ type Config struct {
 func LoadConfig(path string) (config Config, err error) {
 	// Default environment is dev, you can change this based on your needs
 	env := os.Getenv("APP_ENV")
-	if env == "" {
-		env = "dev" // default to dev if not set
-	}
 
 	// Determine which config file to load based on the environment
 	var configFile string

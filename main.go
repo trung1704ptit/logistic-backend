@@ -134,5 +134,5 @@ func main() {
 	PayslipRouteController.PayslipRoute(router)
 
 	// Start the server
-	log.Fatal(server.Run("localhost:" + config.ServerPort))
+	log.Fatal(server.Run(":" + config.ServerPort))
 }
