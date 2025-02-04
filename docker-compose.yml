@@ -20,8 +20,8 @@ services:
       - 8000:8000
     restart: always
     volumes:
-      - logistic_volumes:/usr/src/app/                # Mount the app source code
-      - upload_files:/usr/src/app/uploads/          # Mount the upload folder to persist files
+      - tnt_volumes:/usr/src/app/          
+      - ../tnt-uploads:/usr/src/app/tnt-uploads/
     depends_on:
       - app_db
     networks:
@@ -30,8 +30,7 @@ services:
 
 volumes:
   pgdata:
-  logistic_volumes:
-  upload_files:
+  tnt_volumes:
 
 networks:
   app_network:

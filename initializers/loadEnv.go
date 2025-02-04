@@ -31,6 +31,7 @@ type Config struct {
 
 func LoadConfig(path string) (config Config, err error) {
 	// Default environment is dev, you can change this based on your needs
+	// env APP_ENV=dev go run main.go for dev command
 	env := os.Getenv("APP_ENV")
 
 	// Determine which config file to load based on the environment
