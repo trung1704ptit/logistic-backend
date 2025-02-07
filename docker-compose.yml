@@ -9,7 +9,7 @@ services:
     env_file:
       - ./app.dev.env
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - ./db_data:/var/lib/postgresql/data
     networks:
       - app_network
 
@@ -29,7 +29,6 @@ services:
     entrypoint: ["/bin/sh", "-c", "go run migrate/migrate.go && go run main.go"]
 
 volumes:
-  pgdata:
   tnt_volumes:
 
 networks:
