@@ -11,7 +11,7 @@ type Order struct {
 	ContractorID     uuid.UUID  `gorm:"type:uuid;not null" json:"contractor_id"`
 	Contractor       Contractor `gorm:"foreignKey:ContractorID;references:ID" json:"contractor"`
 	OrderTime        time.Time  `json:"order_time"`
-	CompanyName      string     `gorm:"size:255;not null" json:"company_name"`
+	Client           string     `gorm:"size:255;not null" json:"client"`
 	DriverID         uuid.UUID  `gorm:"type:uuid;not null" json:"driver_id"`
 	Driver           Driver     `gorm:"foreignKey:DriverID" json:"driver"`
 	TruckID          uuid.UUID  `gorm:"type:uuid;not null" json:"truck_id"`

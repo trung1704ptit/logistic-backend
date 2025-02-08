@@ -77,6 +77,50 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": gin.H{"user": userResponse}})
 }
 
+func (ac *AuthController) ResetPassword(ctx *gin.Context) {
+	var payload *models.SignUpInput
+	userID := ctx.Param("userId")
+	var user models.User
+
+	if err := ctx.ShouldBindJSON(&payload); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
+
+	if payload.Password != payload.PasswordConfirm {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Passwords do not match"})
+		return
+	}
+
+	hashedPassword, err := utils.HashPassword(payload.Password)
+	if err != nil {
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": err.Error()})
+		return
+	}
+
+	// Find user by ID
+	if err := ac.DB.First(&user, "id = ?", userID).Error; err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"status": "error", "message": "User not found"})
+		return
+	}
+
+	user.Password = hashedPassword
+	if err := ac.DB.Save(&user).Error; err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Failed to update password"})
+	}
+	userResponse := &models.UserResponse{
+		ID:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		Photo:     user.Photo,
+		Role:      user.Role,
+		Provider:  user.Provider,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}
+	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": userResponse})
+}
+
 func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	var payload *models.SignInInput
 

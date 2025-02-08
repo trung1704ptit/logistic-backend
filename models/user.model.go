@@ -7,23 +7,23 @@ import (
 )
 
 type User struct {
-	ID        uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
-	Name      string    `gorm:"type:varchar(255);not null"`
-	Email     string    `gorm:"uniqueIndex;not null"`
-	Password  string    `gorm:"not null"`
-	Role      string    `gorm:"type:varchar(255);not null"`
-	Provider  string    `gorm:"not null"`
-	Photo     string
-	Verified  bool      `gorm:"not null"`
-	CreatedAt time.Time `gorm:"not null"`
-	UpdatedAt time.Time `gorm:"not null"`
+	ID        uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key" json:"id"`
+	Name      string    `gorm:"type:varchar(255);not null" json:"name"`
+	Email     string    `gorm:"uniqueIndex;not null" json:"email"`
+	Password  string    `gorm:"not null" json:"-"`
+	Role      string    `gorm:"type:varchar(255);not null" json:"role"`
+	Provider  string    `gorm:"not null" json:"-"`
+	Photo     string    `json:"-"`
+	Verified  bool      `gorm:"not null" json:"-"`
+	CreatedAt time.Time `gorm:"not null" json:"created_at"`
+	UpdatedAt time.Time `gorm:"not null" json:"updated_at"`
 }
 
 type SignUpInput struct {
 	Name            string `json:"name" binding:"required"`
 	Email           string `json:"email" binding:"required"`
 	Password        string `json:"password" binding:"required,min=8"`
-	PasswordConfirm string `json:"passwordConfirm" binding:"required"`
+	PasswordConfirm string `json:"password_confirm" binding:"required"`
 	Photo           string `json:"photo,omitempty"`
 }
 
