@@ -108,17 +108,8 @@ func (ac *AuthController) ResetPassword(ctx *gin.Context) {
 	if err := ac.DB.Save(&user).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Failed to update password"})
 	}
-	userResponse := &models.UserResponse{
-		ID:        user.ID,
-		Name:      user.Name,
-		Email:     user.Email,
-		Photo:     user.Photo,
-		Role:      user.Role,
-		Provider:  user.Provider,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-	}
-	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": userResponse})
+
+	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": user})
 }
 
 func (ac *AuthController) SignInUser(ctx *gin.Context) {
@@ -160,7 +151,7 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	ctx.SetCookie("refresh_token", refresh_token, config.RefreshTokenMaxAge*60, "/", "localhost", false, true)
 	ctx.SetCookie("logged_in", "true", config.AccessTokenMaxAge*60, "/", "localhost", false, false)
 
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "access_token": access_token, "refresh_token": refresh_token})
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "access_token": access_token, "refresh_token": refresh_token, "user_profile": user})
 }
 
 // Refresh Access Token
