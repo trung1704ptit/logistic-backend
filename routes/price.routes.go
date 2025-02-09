@@ -19,15 +19,15 @@ func (rc *PricingRouteController) PricingRoute(rg *gin.RouterGroup) {
 	router.Use(middleware.DeserializeUser())
 
 	// Route to create new pricing
-	router.POST("/:contractorId", rc.pricingController.CreatePricing)
+	router.POST("/:ownerId", rc.pricingController.CreatePricing)
 
-	router.GET("/:contractorId", rc.pricingController.FindPricingListByContractorID)
+	router.GET("/:ownerId", rc.pricingController.FindPricingListByContractorID)
 
-	router.GET("/:contractorId/latest", rc.pricingController.FindLatestPricingByContractorID)
+	router.GET("/:ownerId/latest", rc.pricingController.FindLatestPricingByContractorID)
 
-	router.GET("/:contractorId/:priceId", rc.pricingController.FindPricingByContractorIDAndPriceID)
+	router.GET("/:ownerId/:priceId", rc.pricingController.FindPricingByContractorIDAndPriceID)
 
-	router.DELETE("/:contractorId/:priceId", rc.pricingController.DeletePricingWithDetails)
+	router.DELETE("/:ownerId/:priceId", rc.pricingController.DeletePricingWithDetails)
 
-	router.DELETE("/:contractorId", rc.pricingController.DeleteAllPricingByContractorID)
+	router.DELETE("/:ownerId", rc.pricingController.DeleteAllPricingByContractorID)
 }

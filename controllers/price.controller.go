@@ -33,6 +33,8 @@ func (pc *PricingController) CreatePricing(ctx *gin.Context) {
 		ID:           uuid.New(),
 		FileName:     payload.FileName,
 		PriceDetails: payload.Prices,
+		OwnerID:      payload.OwnerID,
+		OwnerType:    payload.OwnerType,
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
 	}
@@ -61,11 +63,11 @@ func (pc *PricingController) CreatePricing(ctx *gin.Context) {
 }
 
 func (pc *PricingController) FindPricingListByContractorID(ctx *gin.Context) {
-	contractorID := ctx.Param("contractorId")
+	ownerId := ctx.Param("ownerId")
 
 	// Use a slice to hold multiple pricings
 	var pricings []models.Pricing
-	query := pc.DB.Where("contractor_id = ?", contractorID).Order("created_at DESC")
+	query := pc.DB.Where("owner_id = ?", ownerId).Order("created_at DESC")
 
 	if err := query.Find(&pricings).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -82,12 +84,12 @@ func (pc *PricingController) FindPricingListByContractorID(ctx *gin.Context) {
 
 func (pc *PricingController) FindLatestPricingByContractorID(c *gin.Context) {
 	// Parse contractor ID from the request
-	contractorID := c.Param("contractorId")
+	ownerId := c.Param("ownerId")
 	var latestPricing models.Pricing
 
 	// Query the database to get the latest pricing by contractor ID
 	err := pc.DB.Preload("PriceDetails").
-		Where("contractor_id = ?", contractorID).
+		Where("owner_id = ?", ownerId).
 		Order("created_at DESC").
 		First(&latestPricing).Error
 
@@ -107,14 +109,14 @@ func (pc *PricingController) FindLatestPricingByContractorID(c *gin.Context) {
 
 func (pc *PricingController) FindPricingByContractorIDAndPriceID(c *gin.Context) {
 	// Parse contractor ID from the request
-	contractorID := c.Param("contractorId")
+	ownerId := c.Param("ownerId")
 	priceID := c.Param("priceId")
 
 	var latestPricing models.Pricing
 
 	// Query the database to get the latest pricing by contractor ID
 	err := pc.DB.Preload("PriceDetails").
-		Where("contractor_id = ? and id = ?", contractorID, priceID).
+		Where("owner_id = ? and id = ?", ownerId, priceID).
 		Order("created_at DESC").
 		First(&latestPricing).Error
 
@@ -134,17 +136,17 @@ func (pc *PricingController) FindPricingByContractorIDAndPriceID(c *gin.Context)
 
 // DeletePricingByContractorID deletes pricings and their price details for a specific contractor
 func (pc *PricingController) DeleteAllPricingByContractorID(ctx *gin.Context) {
-	contractorID := ctx.Param("contractorId")
+	ownerId := ctx.Param("ownerId")
 
 	tx := pc.DB.Begin()
 
-	if err := tx.Where("contractor_id = ?", contractorID).Delete(&models.PriceDetail{}).Error; err != nil {
+	if err := tx.Where("owner_id = ?", ownerId).Delete(&models.PriceDetail{}).Error; err != nil {
 		tx.Rollback()
 		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
-	if err := tx.Where("contractor_id = ?", contractorID).Delete(&models.Pricing{}).Error; err != nil {
+	if err := tx.Where("owner_id = ?", ownerId).Delete(&models.Pricing{}).Error; err != nil {
 		tx.Rollback()
 		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": err.Error()})
 		return
@@ -154,16 +156,16 @@ func (pc *PricingController) DeleteAllPricingByContractorID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": "Pricings deleted successfully"})
 }
 
-// DeletePricingWithDetails deletes a pricing and all its associated price details by contractor_id and pricing_id
+// DeletePricingWithDetails deletes a pricing and all its associated price details by owner_id and pricing_id
 func (pc *PricingController) DeletePricingWithDetails(ctx *gin.Context) {
-	// Extract contractor_id and pricing_id from request parameters
-	contractorIDParam := ctx.Param("contractorId")
+	// Extract owner_id and pricing_id from request parameters
+	ownerId := ctx.Param("ownerId")
 	priceIDParam := ctx.Param("priceId")
 
 	// Validate UUIDs
-	contractorID, err := uuid.Parse(contractorIDParam)
+	contractorID, err := uuid.Parse(ownerId)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid contractor_id"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid owner_id"})
 		return
 	}
 
@@ -175,9 +177,9 @@ func (pc *PricingController) DeletePricingWithDetails(ctx *gin.Context) {
 
 	tx := pc.DB.Begin()
 
-	// Check if the Pricing exists with the given contractor_id and pricing_id
+	// Check if the Pricing exists with the given owner_id and pricing_id
 	var pricing models.Pricing
-	err = tx.Where("id = ? AND contractor_id = ?", pricingID, contractorID).First(&pricing).Error
+	err = tx.Where("id = ? AND owner_id = ?", pricingID, contractorID).First(&pricing).Error
 	if err != nil {
 		tx.Rollback()
 		if errors.Is(err, gorm.ErrRecordNotFound) {
