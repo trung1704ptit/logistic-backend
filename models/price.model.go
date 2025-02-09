@@ -10,11 +10,10 @@ import (
 
 // CreatePricing is used to create a new pricing record
 type CreatePricing struct {
-	ContractorID uuid.UUID     `gorm:"type:uuid" json:"contractor_id,omitempty"`
-	FileName     string        `gorm:"not null" json:"file_name"`
-	Prices       []PriceDetail `gorm:"-" json:"prices"`
-	OwnerID      uuid.UUID     `gorm:"type:uuid;not null" json:"owner_id"`
-	OwnerType    string        `gorm:"not null" json:"owner_type"`
+	FileName  string        `gorm:"not null" json:"file_name"`
+	Prices    []PriceDetail `gorm:"-" json:"prices"`
+	OwnerID   uuid.UUID     `gorm:"type:uuid;index"  json:"owner_id"`
+	OwnerType string        `gorm:"not null;index" json:"owner_type"`
 }
 
 // Pricing represents the pricing structure in the system

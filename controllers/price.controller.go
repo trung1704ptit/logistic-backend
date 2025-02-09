@@ -83,7 +83,6 @@ func (pc *PricingController) FindPricingListByContractorID(ctx *gin.Context) {
 }
 
 func (pc *PricingController) FindLatestPricingByContractorID(c *gin.Context) {
-	// Parse contractor ID from the request
 	ownerId := c.Param("ownerId")
 	var latestPricing models.Pricing
 

@@ -7,7 +7,7 @@ services:
     ports:
       - "6500:5432"
     env_file:
-      - ./app.prod.env
+      - ./app.dev.env
     volumes:
       - ./db_data:/var/lib/postgresql/data
     networks:
