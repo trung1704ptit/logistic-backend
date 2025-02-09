@@ -12,17 +12,21 @@ import (
 type CreatePricing struct {
 	ContractorID uuid.UUID     `gorm:"type:uuid" json:"contractor_id,omitempty"`
 	FileName     string        `gorm:"not null" json:"file_name"`
-	Prices       []PriceDetail `gorm:"-" json:"prices"` // This is the list of price details provided in the request
+	Prices       []PriceDetail `gorm:"-" json:"prices"`
+	OwnerID      uuid.UUID     `gorm:"type:uuid;not null" json:"owner_id"`
+	OwnerType    string        `gorm:"not null" json:"owner_type"`
 }
 
 // Pricing represents the pricing structure in the system
 type Pricing struct {
 	ID           uuid.UUID     `gorm:"type:uuid;default:uuid_generate_v4();primary_key" json:"id,omitempty"`
-	ContractorID uuid.UUID     `gorm:"type:uuid" json:"contractor_id,omitempty"`
 	FileName     string        `gorm:"not null" json:"file_name"`
 	PriceDetails []PriceDetail `gorm:"foreignkey:PricingID" json:"price_details"` // One-to-many relationship
 	CreatedAt    time.Time     `json:"created_at"`
 	UpdatedAt    time.Time     `json:"updated_at"`
+
+	OwnerID   uuid.UUID `gorm:"type:uuid;index" json:"owner_id,omitempty"`
+	OwnerType string    `gorm:"not null;index" json:"owner_type,omitempty"` // "client" hoặc "contractor"
 }
 
 type PriceDetail struct {
@@ -38,8 +42,6 @@ type PriceDetail struct {
 
 // Custom type to handle map in JSONB format
 type JSONBMap map[string]float64
-
-// Implement GORM's Scanner and Valuer interfaces for the JSONBMap custom type
 
 // Scan implements the Scanner interface to handle the JSONB type
 func (j *JSONBMap) Scan(value interface{}) error {

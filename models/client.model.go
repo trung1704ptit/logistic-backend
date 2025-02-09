@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type Contractor struct {
+type Client struct {
 	ID        uuid.UUID      `gorm:"type:uuid;default:uuid_generate_v4();primary_key" json:"id,omitempty"`
 	Name      string         `gorm:"not null" json:"name,omitempty"`
 	Phone     string         `gorm:"not null" json:"phone,omitempty"`
@@ -17,12 +17,10 @@ type Contractor struct {
 	UpdatedAt time.Time      `gorm:"not null" json:"updated_at,omitempty"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
 
-	Drivers  []Driver  `gorm:"foreignKey:ContractorID" json:"drivers,omitempty"` // One-to-many relation with Driver
-	Trucks   []Truck   `gorm:"foreignKey:ContractorID" json:"trucks,omitempty"`  // One-to-many relation with Truck
 	Pricings []Pricing `gorm:"polymorphic:Owner;constraint:OnDelete:CASCADE;" json:"pricings,omitempty"`
 }
 
-type CreateContractorRequest struct {
+type CreateClientRequest struct {
 	Name      string    `json:"name" binding:"required"`
 	Phone     string    `json:"phone" binding:"required"`
 	Address   string    `json:"address" binding:"required"`
@@ -31,7 +29,7 @@ type CreateContractorRequest struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
 
-type UpdateContractor struct {
+type UpdateClient struct {
 	Name      string    `json:"name,omitempty"`
 	Phone     string    `json:"phone,omitempty"`
 	Address   string    `json:"address,omitempty"`

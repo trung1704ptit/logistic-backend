@@ -31,7 +31,6 @@ func (pc *PricingController) CreatePricing(ctx *gin.Context) {
 
 	pricing := models.Pricing{
 		ID:           uuid.New(),
-		ContractorID: payload.ContractorID,
 		FileName:     payload.FileName,
 		PriceDetails: payload.Prices,
 		CreatedAt:    time.Now(),

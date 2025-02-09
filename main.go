@@ -42,6 +42,9 @@ var (
 
 	PayslipController      controllers.PayslipController
 	PayslipRouteController routes.PayslipRouteController
+
+	ClientController      controllers.ClientController
+	ClientRouteController routes.ClientRouteController
 )
 
 func init() {
@@ -82,6 +85,9 @@ func init() {
 
 	PayslipController = controllers.PayslipController{DB: initializers.DB}
 	PayslipRouteController = routes.NewPayslipRouteController(PayslipController)
+
+	ClientController = controllers.ClientController{DB: initializers.DB}
+	ClientRouteController = routes.NewClientRouteController(ClientController)
 
 	// Initialize Gin server
 	server = gin.Default()
@@ -132,6 +138,9 @@ func main() {
 
 	// Register Payslip routes
 	PayslipRouteController.PayslipRoute(router)
+
+	// Register Client routes
+	ClientRouteController.ClientRoute(router)
 
 	// Start the server
 	log.Fatal(server.Run(":" + config.ServerPort))
