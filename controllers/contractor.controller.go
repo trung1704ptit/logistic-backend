@@ -37,6 +37,10 @@ func (cc *ContractorController) CreateContractor(ctx *gin.Context) {
 		UpdatedAt: now,
 	}
 
+	if payload.Name == "T&T" || payload.Name == "T & T" {
+		newContractor.Type = "internal"
+	}
+
 	result := cc.DB.Create(&newContractor)
 	if result.Error != nil {
 		if strings.Contains(result.Error.Error(), "duplicate key") {
@@ -105,7 +109,7 @@ func (cc *ContractorController) FindContractors(ctx *gin.Context) {
 	offset := (intPage - 1) * intLimit
 
 	var contractors []models.Contractor
-	results := cc.DB.Preload("Drivers").Preload("Trucks").Limit(intLimit).Offset(offset).Find(&contractors)
+	results := cc.DB.Preload("Drivers").Preload("Trucks").Limit(intLimit).Offset(offset).Order("updated_at DESC").Find(&contractors)
 	if results.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": results.Error.Error()})
 		return

@@ -16,6 +16,7 @@ type Contractor struct {
 	CreatedAt time.Time      `gorm:"not null" json:"created_at,omitempty"`
 	UpdatedAt time.Time      `gorm:"not null" json:"updated_at,omitempty"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
+	Type      string         `gorm:"not null;default:external" json:"type,omitempty"`
 
 	Drivers  []Driver  `gorm:"foreignKey:ContractorID" json:"drivers,omitempty"` // One-to-many relation with Driver
 	Trucks   []Truck   `gorm:"foreignKey:ContractorID" json:"trucks,omitempty"`  // One-to-many relation with Truck
@@ -27,6 +28,7 @@ type CreateContractorRequest struct {
 	Phone     string    `json:"phone" binding:"required"`
 	Address   string    `json:"address" binding:"required"`
 	Note      string    `json:"note,omitempty"`
+	Type      string    `gorm:"not null;default:external" json:"type,omitempty"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }

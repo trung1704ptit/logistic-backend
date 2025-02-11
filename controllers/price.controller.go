@@ -62,12 +62,13 @@ func (pc *PricingController) CreatePricing(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": pricing})
 }
 
-func (pc *PricingController) FindPricingListByContractorID(ctx *gin.Context) {
+func (pc *PricingController) FindPricingListByOwner(ctx *gin.Context) {
 	ownerId := ctx.Param("ownerId")
+	ownerType := ctx.Query("ownerType")
 
 	// Use a slice to hold multiple pricings
 	var pricings []models.Pricing
-	query := pc.DB.Where("owner_id = ?", ownerId).Order("created_at DESC")
+	query := pc.DB.Where("owner_id = ? AND owner_type = ?", ownerId, ownerType).Order("created_at DESC")
 
 	if err := query.Find(&pricings).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -82,7 +83,7 @@ func (pc *PricingController) FindPricingListByContractorID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": pricings})
 }
 
-func (pc *PricingController) FindLatestPricingByContractorID(c *gin.Context) {
+func (pc *PricingController) FindLatestPricingByOwner(c *gin.Context) {
 	ownerId := c.Param("ownerId")
 	var latestPricing models.Pricing
 
@@ -106,7 +107,7 @@ func (pc *PricingController) FindLatestPricingByContractorID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "success", "data": latestPricing})
 }
 
-func (pc *PricingController) FindPricingByContractorIDAndPriceID(c *gin.Context) {
+func (pc *PricingController) FindPricingByOwnerAndPriceID(c *gin.Context) {
 	// Parse contractor ID from the request
 	ownerId := c.Param("ownerId")
 	priceID := c.Param("priceId")

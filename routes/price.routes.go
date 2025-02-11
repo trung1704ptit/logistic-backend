@@ -21,11 +21,11 @@ func (rc *PricingRouteController) PricingRoute(rg *gin.RouterGroup) {
 	// Route to create new pricing
 	router.POST("/:ownerId", rc.pricingController.CreatePricing)
 
-	router.GET("/:ownerId", rc.pricingController.FindPricingListByContractorID)
+	router.GET("/:ownerId", rc.pricingController.FindPricingListByOwner)
 
-	router.GET("/:ownerId/latest", rc.pricingController.FindLatestPricingByContractorID)
+	router.GET("/:ownerId/latest", rc.pricingController.FindLatestPricingByOwner)
 
-	router.GET("/:ownerId/:priceId", rc.pricingController.FindPricingByContractorIDAndPriceID)
+	router.GET("/:ownerId/:priceId", rc.pricingController.FindPricingByOwnerAndPriceID)
 
 	router.DELETE("/:ownerId/:priceId", rc.pricingController.DeletePricingWithDetails)
 
