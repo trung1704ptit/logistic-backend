@@ -45,6 +45,9 @@ var (
 
 	ClientController      controllers.ClientController
 	ClientRouteController routes.ClientRouteController
+
+	SettingController      controllers.SettingController
+	SettingRouteController routes.SettingRouteController
 )
 
 func init() {
@@ -79,15 +82,17 @@ func init() {
 	FileController = controllers.NewFileController(config.UploadFilePath)
 	FileRouteController = routes.NewFileRouteController(FileController)
 
-	// Initialize Order Controller and Route Controller
-	OrderController = controllers.OrderController{DB: initializers.DB}
+	OrderController = controllers.NewOrderController(initializers.DB)
 	OrderRouteController = routes.NewOrderRouteController(OrderController)
 
-	PayslipController = controllers.PayslipController{DB: initializers.DB}
+	PayslipController = controllers.NewPayslipController(initializers.DB)
 	PayslipRouteController = routes.NewPayslipRouteController(PayslipController)
 
-	ClientController = controllers.ClientController{DB: initializers.DB}
+	ClientController = controllers.NewClientController(initializers.DB)
 	ClientRouteController = routes.NewClientRouteController(ClientController)
+
+	SettingController = controllers.NewSettingController(initializers.DB)
+	SettingRouteController = routes.NewSettingRouteController(SettingController)
 
 	// Initialize Gin server
 	server = gin.Default()
@@ -141,6 +146,9 @@ func main() {
 
 	// Register Client routes
 	ClientRouteController.ClientRoute(router)
+
+	// Register Setting routes
+	SettingRouteController.SettingRoute(router)
 
 	// Start the server
 	log.Fatal(server.Run(":" + config.ServerPort))

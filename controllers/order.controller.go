@@ -28,7 +28,7 @@ func (ctrl *OrderController) CreateOrder(ctx *gin.Context) {
 
 	newOrder.ID = uuid.New() // Generate a new UUID for the order
 	if err := ctrl.DB.Create(&newOrder).Error; err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Failed to create order"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()})
 		return
 	}
 
@@ -66,6 +66,7 @@ func (ctrl *OrderController) GetOrders(ctx *gin.Context) {
 	query := ctrl.DB.Preload("Contractor").
 		Preload("Driver").
 		Preload("Truck").
+		Preload("Client").
 		Where("EXTRACT(MONTH from updated_at) = ? AND EXTRACT(YEAR FROM updated_at) = ?", monthInt, yearInt)
 
 	// add driver id condition if provided
@@ -98,6 +99,7 @@ func (ctrl *OrderController) GetOrderByID(c *gin.Context) {
 	if err := ctrl.DB.Preload("Contractor").
 		Preload("Driver").
 		Preload("Truck").
+		Preload("Client").
 		First(&order, "id = ?", id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"status": "error", "message": "Order not found"})
