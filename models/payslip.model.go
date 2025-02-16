@@ -10,8 +10,8 @@ type Payslip struct {
 	ID                  uuid.UUID  `gorm:"type:uuid;default:uuid_generate_v4();primary_key" json:"id,omitempty"`
 	ContractorID        uuid.UUID  `gorm:"type:uuid;not null" json:"contractor_id"`
 	Contractor          Contractor `gorm:"foreignKey:ContractorID;references:ID" json:"contractor"`
-	DriverID            uuid.UUID  `gorm:"type:uuid;not null" json:"driver_id"`
-	Driver              Driver     `gorm:"foreignKey:DriverID" json:"driver"`
+	DriverID            *uuid.UUID `gorm:"type:uuid" json:"driver_id,omitempty"`
+	Driver              Driver     `gorm:"foreignKey:DriverID" json:"driver,omitempty"`
 	TotalTrips          *float64   `gorm:"not null;default:0" json:"total_trips"`
 	TakeCareTruckSalary *float64   `gorm:"not null;default:0" json:"take_care_truck_salary"`
 	AllowanceSunday     *float64   `gorm:"not null;default:0" json:"allowance_sunday_salary"`
@@ -19,6 +19,7 @@ type Payslip struct {
 	AllowancePhone      *float64   `gorm:"not null;default:0" json:"allowance_phone_salary"`
 	PointSalary         *float64   `gorm:"not null;default:0" json:"point_salary"`
 	TripSalary          *float64   `gorm:"not null;default:0" json:"trip_salary"`
+	PriceForContractor  *float64   `gorm:"not null;default:0" json:"price_for_contractor"`
 	MealFee             *float64   `gorm:"not null;default:0" json:"meal_fee"`
 	DailySalary         *float64   `gorm:"not null;default:0" json:"daily_salary"`
 	KPISalary           *float64   `gorm:"not null;default:0" json:"kpi_salary"`

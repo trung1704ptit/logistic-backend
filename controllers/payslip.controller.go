@@ -28,7 +28,7 @@ func (ctrl *PayslipController) CreatePayslip(ctx *gin.Context) {
 
 	newPayslip.ID = uuid.New() // Generate a new UUID for the payslip
 	if err := ctrl.DB.Create(&newPayslip).Error; err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Failed to create payslip"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()})
 		return
 	}
 
