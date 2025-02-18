@@ -109,7 +109,10 @@ func main() {
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = []string{"https://vantaitt.com", "https://app.vantaitt.com", "https://api.vantaitt.com", "http://localhost:5173", config.ClientOrigin}
 	corsConfig.AllowCredentials = true
-
+	corsConfig.AllowHeaders = []string{
+		"Content-Type",
+		"Authorization",
+	}
 	// Use CORS middleware
 	server.Use(cors.New(corsConfig))
 
