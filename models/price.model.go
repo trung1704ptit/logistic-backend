@@ -29,14 +29,14 @@ type Pricing struct {
 }
 
 type PriceDetail struct {
-	ID           uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key" json:"id,omitempty"`
-	PricingID    uuid.UUID `gorm:"type:uuid" json:"pricing_id"` // Foreign key to Pricing
-	FromCity     string    `json:"from_city"`
-	FromDistrict string    `json:"from_district"`
-	ToCity       string    `json:"to_city"`
-	ToDistrict   string    `json:"to_district"`
-	Notes        string    `json:"notes"`
-	WeightPrices JSONBMap  `gorm:"type:jsonb" json:"weight_prices"` // Use custom type to handle map
+	ID               uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key" json:"id,omitempty"`
+	PricingID        uuid.UUID `gorm:"type:uuid" json:"pricing_id"` // Foreign key to Pricing
+	PickupPrivince   string    `json:"pickup_province"`
+	PickupDistrict   string    `json:"pickup_district"`
+	DeliveryProvince string    `json:"delivery_province"`
+	DeliveryDistrict string    `json:"delivery_district"`
+	Notes            string    `json:"notes"`
+	WeightPrices     JSONBMap  `gorm:"type:jsonb" json:"weight_prices"` // Use custom type to handle map
 }
 
 // Custom type to handle map in JSONB format
