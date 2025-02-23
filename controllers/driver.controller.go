@@ -81,7 +81,7 @@ func (dc *DriverController) FindDriverById(ctx *gin.Context) {
 
 func (dc *DriverController) FindDrivers(ctx *gin.Context) {
 	var page = ctx.DefaultQuery("page", "1")
-	var limit = ctx.DefaultQuery("limit", "10")
+	var limit = ctx.DefaultQuery("limit", "200")
 
 	intPage, _ := strconv.Atoi(page)
 	intLimit, _ := strconv.Atoi(limit)

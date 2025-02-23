@@ -54,7 +54,7 @@ func (uc *UserController) FindUser(ctx *gin.Context) {
 
 func (uc *UserController) FindUsers(ctx *gin.Context) {
 	var page = ctx.DefaultQuery("page", "1")
-	var limit = ctx.DefaultQuery("limit", "20")
+	var limit = ctx.DefaultQuery("limit", "200")
 
 	intPage, _ := strconv.Atoi(page)
 	intLimit, _ := strconv.Atoi(limit)

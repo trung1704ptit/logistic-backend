@@ -96,7 +96,7 @@ func (pc *PostController) FindPostById(ctx *gin.Context) {
 
 func (pc *PostController) FindPosts(ctx *gin.Context) {
 	var page = ctx.DefaultQuery("page", "1")
-	var limit = ctx.DefaultQuery("limit", "10")
+	var limit = ctx.DefaultQuery("limit", "200")
 
 	intPage, _ := strconv.Atoi(page)
 	intLimit, _ := strconv.Atoi(limit)

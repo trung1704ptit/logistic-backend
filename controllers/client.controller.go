@@ -49,7 +49,7 @@ func (cc *ClientController) CreateClient(ctx *gin.Context) {
 
 func (cc *ClientController) FindClients(ctx *gin.Context) {
 	var page = ctx.DefaultQuery("page", "1")
-	var limit = ctx.DefaultQuery("limit", "50")
+	var limit = ctx.DefaultQuery("limit", "200")
 
 	intPage, _ := strconv.Atoi(page)
 	intLimit, _ := strconv.Atoi(limit)
