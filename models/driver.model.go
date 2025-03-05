@@ -30,8 +30,8 @@ type Driver struct {
 
 type CreateDriverRequest struct {
 	FullName      string    `json:"full_name" binding:"required"`
-	Phone         string    `json:"phone" binding:"required"`
-	CCCD          string    `json:"cccd" binding:"required"`
+	Phone         string    `json:"phone"`
+	CCCD          string    `json:"cccd"`
 	IssueDate     time.Time `json:"issue_date"` // Ensure this is properly passed as time.Time
 	DateOfBirth   time.Time `json:"date_of_birth"`
 	Address       string    `json:"address"`

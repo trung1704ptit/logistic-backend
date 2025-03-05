@@ -93,19 +93,19 @@ func (tc *TruckController) UpdateTruck(ctx *gin.Context) {
 	if payload.LicensePlate != "" {
 		updates["LicensePlate"] = payload.LicensePlate
 	}
-	if payload.Capacity != 0 {
+	if payload.Capacity != nil {
 		updates["Capacity"] = payload.Capacity
 	}
-	if payload.Length != 0 {
+	if payload.Length != nil {
 		updates["Length"] = payload.Length
 	}
-	if payload.Width != 0 {
+	if payload.Width != nil {
 		updates["Width"] = payload.Width
 	}
-	if payload.Height != 0 {
+	if payload.Height != nil {
 		updates["Height"] = payload.Height
 	}
-	if payload.Volume != 0 {
+	if payload.Volume != nil {
 		updates["Volume"] = payload.Volume
 	}
 	if payload.Brand != "" {
