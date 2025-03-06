@@ -23,4 +23,5 @@ func (rc *TruckRouteController) TruckRoute(rg *gin.RouterGroup) {
 	router.PUT("/:truckId", rc.truckController.UpdateTruck)
 	router.GET("/:truckId", rc.truckController.FindTruckById)
 	router.DELETE("/:truckId", rc.truckController.DeleteTruck)
+	router.POST("/delete", rc.truckController.DeleteTrucks)
 }

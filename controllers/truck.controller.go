@@ -181,3 +181,52 @@ func (tc *TruckController) DeleteTruck(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusNoContent, gin.H{"status": "success", "message": "Truck deleted successfully"})
 }
+
+// DeleteTrucks handles deleting multiple trucks by their IDs.
+func (tc *TruckController) DeleteTrucks(ctx *gin.Context) {
+	var req struct {
+		TruckIDs []string `json:"truck_ids"` // Expecting a JSON body with an array of truck IDs
+	}
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid request format"})
+		return
+	}
+
+	if len(req.TruckIDs) == 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "No truck IDs provided"})
+		return
+	}
+
+	var deletedIDs []string
+	var failedIDs []string
+
+	for _, id := range req.TruckIDs {
+		// Validate UUID
+		if _, err := uuid.Parse(id); err != nil {
+			failedIDs = append(failedIDs, id)
+			continue // Skip invalid UUIDs
+		}
+
+		// Try to delete the truck
+		result := tc.DB.Where("id = ?", id).Delete(&models.Truck{})
+		if result.Error != nil {
+			failedIDs = append(failedIDs, id)
+			continue // Skip errors and continue with other IDs
+		}
+
+		if result.RowsAffected > 0 {
+			deletedIDs = append(deletedIDs, id)
+		} else {
+			failedIDs = append(failedIDs, id) // Truck not found or already deleted
+		}
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"status": "success",
+		"data": gin.H{
+			"deleted_ids": deletedIDs,
+			"failed_ids":  failedIDs,
+		},
+	})
+}

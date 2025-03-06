@@ -24,4 +24,5 @@ func (rc *DriverRouteController) DriverRoute(rg *gin.RouterGroup) {
 	router.GET("/:driverId", rc.driverController.FindDriverById)
 	router.PUT("/:driverId", rc.driverController.UpdateDriver)
 	router.DELETE("/:driverId", rc.driverController.DeleteDriver)
+	router.POST("/delete", rc.driverController.DeleteDrivers)
 }

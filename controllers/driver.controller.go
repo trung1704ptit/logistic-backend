@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -80,15 +79,8 @@ func (dc *DriverController) FindDriverById(ctx *gin.Context) {
 }
 
 func (dc *DriverController) FindDrivers(ctx *gin.Context) {
-	var page = ctx.DefaultQuery("page", "1")
-	var limit = ctx.DefaultQuery("limit", "200")
-
-	intPage, _ := strconv.Atoi(page)
-	intLimit, _ := strconv.Atoi(limit)
-	offset := (intPage - 1) * intLimit
-
 	var drivers []models.Driver
-	results := dc.DB.Limit(intLimit).Offset(offset).Preload("Contractor").Find(&drivers)
+	results := dc.DB.Preload("Contractor").Find(&drivers)
 	if results.Error != nil {
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": results.Error.Error()})
 		return
@@ -169,4 +161,53 @@ func (dc *DriverController) DeleteDriver(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusNoContent, nil)
+}
+
+// DeleteDrivers handles deleting multiple drivers by their IDs.
+func (tc *DriverController) DeleteDrivers(ctx *gin.Context) {
+	var req struct {
+		DriverIDs []string `json:"driver_ids"` // Expecting a JSON body with an array of driver IDs
+	}
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid request format"})
+		return
+	}
+
+	if len(req.DriverIDs) == 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "No driver IDs provided"})
+		return
+	}
+
+	var deletedIDs []string
+	var failedIDs []string
+
+	for _, id := range req.DriverIDs {
+		// Validate UUID
+		if _, err := uuid.Parse(id); err != nil {
+			failedIDs = append(failedIDs, id)
+			continue // Skip invalid UUIDs
+		}
+
+		// Try to delete the driver
+		result := tc.DB.Where("id = ?", id).Delete(&models.Driver{})
+		if result.Error != nil {
+			failedIDs = append(failedIDs, id)
+			continue // Skip errors and continue with other IDs
+		}
+
+		if result.RowsAffected > 0 {
+			deletedIDs = append(deletedIDs, id)
+		} else {
+			failedIDs = append(failedIDs, id) // driver not found or already deleted
+		}
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"status": "success",
+		"data": gin.H{
+			"deleted_ids": deletedIDs,
+			"failed_ids":  failedIDs,
+		},
+	})
 }
