@@ -5,13 +5,18 @@ services:
     image: postgres
     container_name: app_db
     ports:
-      - "6500:5432"
+      - "5432:5432"
     env_file:
       - ./app.prod.env
     volumes:
       - ./db_data:/var/lib/postgresql/data
     networks:
       - app_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   app_backend:
     container_name: app_backend
@@ -27,6 +32,11 @@ services:
     networks:
       - app_network
     entrypoint: ["/bin/sh", "-c", "go run migrate/migrate.go && go run main.go"]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   tnt_volumes:
