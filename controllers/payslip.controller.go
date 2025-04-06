@@ -41,6 +41,8 @@ func (ctrl *PayslipController) GetPayslips(ctx *gin.Context) {
 	year := ctx.Query("year")
 	driverId := ctx.Query("driver_id")
 	contractorId := ctx.Query("contractor_id")
+	queryType := ctx.Query("type")
+
 
 	// Validate the parameters
 	if month == "" || year == "" {
@@ -74,6 +76,13 @@ func (ctrl *PayslipController) GetPayslips(ctx *gin.Context) {
 	// Add contractor ID condition if provided
 	if contractorId != "all" && contractorId != "" {
 		query = query.Where("contractor_id = ?", contractorId)
+		if queryType == "internal" {
+			query = query.Where("driver_id IS NOT NULL")
+		}
+	} else {
+		// When contractor_id is "all", only include existing contractors (not deleted)
+		query = query.Where("contractor_id IN (?)", ctrl.DB.Model(&models.Contractor{}).Where("deleted_at IS NULL").Select("id"))
+		query = query.Where("driver_id IS NULL")
 	}
 
 	if err := query.Order("updated_at DESC").Find(&payslips).Error; err != nil {
